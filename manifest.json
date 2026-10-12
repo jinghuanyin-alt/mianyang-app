@@ -1,0 +1,16 @@
+{
+  "name": "绵羊 · 效率三件套",
+  "short_name": "绵羊",
+  "description": "番茄钟、日历、任务与习惯打卡，个人效率工具",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F4F5F2",
+  "theme_color": "#234036",
+  "lang": "zh-CN",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
