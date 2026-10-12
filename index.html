@@ -606,6 +606,18 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
 .sv-cell .nm{font-size:11px;font-weight:600;line-height:1.3}
 .sv-cell .sc{font-size:10px;color:var(--ink-3)}
 .book-progress{font-size:13px;color:var(--ink-2);margin:2px 0 12px}
+.diary{position:relative;padding-left:24px}
+.diary:before{content:'';position:absolute;left:5px;top:8px;bottom:8px;width:2px;background:var(--line)}
+.diary-item{position:relative;margin-bottom:12px}
+.diary-dot{position:absolute;left:-24px;top:15px;width:12px;height:12px;border-radius:50%;border:2px solid var(--surface)}
+.diary-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:11px 13px}
+.diary-row{display:flex;gap:12px}
+.diary-thumb{width:72px;height:48px;border-radius:8px;overflow:hidden;flex-shrink:0;line-height:0}
+.diary-thumb svg{width:100%;height:100%;display:block}
+.diary-body{min-width:0}
+.diary-title{font-weight:700;font-size:14px}
+.diary-desc{font-size:12.5px;color:var(--ink-2);margin:3px 0 5px;line-height:1.5}
+.diary-time{font-size:11px;color:var(--ink-3)}
 .travel-progress{height:10px;background:var(--line-soft);border-radius:10px;overflow:hidden;margin:8px 0}
 .travel-progress i{display:block;height:100%;background:linear-gradient(90deg,#7FB37A,#5B9E5B);border-radius:10px}
 .pet-stat{display:flex;align-items:center;gap:10px;margin:6px 0;font-size:13px}
@@ -1035,7 +1047,7 @@ const SUB_ROUTES=[
   {id:'ach',name:'成就',icon:ICONS.ach},
   {id:'settings',name:'设置',icon:ICONS.settings}
 ];
-const ROUTES=MAIN_ROUTES.concat(SUB_ROUTES).concat([{id:'room',name:'小羊的家'}]);
+const ROUTES=MAIN_ROUTES.concat(SUB_ROUTES).concat([{id:'diary',name:'旅行日记'},{id:'room',name:'小羊的家'}]);
 function urgentTasks(){
   const t=todayStr();
   const overdue=db.tasks.filter(x=>!x.rrule&&x.status!=='done'&&x.due_date&&x.due_date<t)
@@ -2776,7 +2788,9 @@ function yardEntries(){
   return [
     ['#/shop','商店',itemIcon('food_scone')],
     ['#/bag','行囊',itemIcon('gear_tent')],
-    ['#/album','明信片',itemIcon('gear_camera')],    ['#/book','图鉴',itemIcon('gear_lantern')]
+    ['#/album','明信片',itemIcon('gear_camera')],
+    ['#/book','图鉴',itemIcon('gear_lantern')],
+    ['#/diary','旅行日记',itemIcon('charm_compass')]
   ].map(e=>`<button class="yard-entry" onclick="location.hash='${e[0]}'">${e[2]}${e[1]}</button>`).join('');
 }
 function visitorPanelHTML(){
@@ -3160,7 +3174,8 @@ function renderAlbum(){
   if(needText)save();
   const scenesGot=SCENES.filter(s=>db.postcards.some(x=>x.scene===s.id)).length;
   let html=`<div class="page-head"><div class="page-title">明信片</div>
-    <div class="page-sub">已收集 ${cards.length} 张 · 到过 ${scenesGot}/${SCENES.length} 个地方</div></div>`;
+    <div class="page-sub">已收集 ${cards.length} 张 · 到过 ${scenesGot}/${SCENES.length} 个地方
+    <button class="link" style="margin-left:8px" onclick="location.hash='#/diary'">旅行日记 ›</button></div></div>`;
   if(cards.length){
     html+=`<div class="album-grid">${cards.map(x=>`
       <div class="pc-card">
@@ -3184,6 +3199,57 @@ function renderAlbum(){
         return `<span style="font-size:12px;padding:3px 10px;border-radius:20px;background:${got?'var(--green-soft)':'var(--line-soft)'};color:${got?'var(--green)':'var(--ink-3)'}">${got?s.name:'？？？'}</span>`;
       }).join('')}
     </div></div>`;
+  $('#page').innerHTML=html;
+}
+
+/* ============================================================
+   旅行日记（时间线）
+   ============================================================ */
+function diaryDate(iso){
+  const d=new Date(iso);
+  return (d.getMonth()+1)+'月'+d.getDate()+'日 '+pad(d.getHours())+':'+pad(d.getMinutes());
+}
+function renderDiary(){
+  const events=[];
+  db.postcards.forEach(c=>{
+    const sn=SCENE_MAP[c.scene];
+    events.push({date:c.date,color:'var(--brand)',
+      title:'明信片 · '+(sn?sn.name:'')+(c.with?' · 和'+c.with:'')+(c.final?' · 归来合影':''),
+      desc:c.text,thumb:sceneSVG(c.scene)});
+  });
+  db.souvenirs.forEach(s=>{
+    events.push({date:s.date,color:'#D9A83E',
+      title:'带回了「'+s.name+'」',
+      desc:'来自'+SCENE_MAP[s.scene].name+' · '+RARITY_LABEL[s.rarity],
+      thumb:souvenirIconByName(s.name,s.rarity)});
+  });
+  Object.keys(db.achievements).forEach(id=>{
+    const a=ACHIEVEMENTS.find(x=>x.id===id);
+    if(!a)return;
+    events.push({date:db.achievements[id].at,color:'#E8A840',
+      title:'解锁成就 · '+a.name,desc:a.desc});
+  });
+  events.sort((a,b)=>b.date.localeCompare(a.date));
+  let html=`<div class="page-head"><div class="page-title">旅行日记</div>
+    <div class="page-sub">共 ${events.length} 段小故事</div></div>`;
+  if(!events.length){
+    html+='<div class="card"><div class="empty">还没有故事<br>去完成任务、送它旅行，慢慢写下你的小日子</div></div>';
+  }else{
+    html+='<div class="diary">'+events.map(e=>`
+      <div class="diary-item">
+        <div class="diary-dot" style="background:${e.color}"></div>
+        <div class="diary-card">
+          <div class="diary-row">
+            ${e.thumb?`<div class="diary-thumb">${e.thumb}</div>`:''}
+            <div class="diary-body">
+              <div class="diary-title">${e.title}</div>
+              ${e.desc?`<div class="diary-desc">${e.desc}</div>`:''}
+              <div class="diary-time">${diaryDate(e.date)}</div>
+            </div>
+          </div>
+        </div>
+      </div>`).join('')+'</div>';
+  }
   $('#page').innerHTML=html;
 }
 
@@ -3288,7 +3354,7 @@ function render(){
   if(before!==db.pet.state||db.pet.state!==before)save();
   const view=location.hash.replace('#/','')||'today';
   const map={today:renderToday,calendar:renderCalendar,tasks:renderTasks,habits:renderHabits,stats:renderStats,settings:renderSettings,
-    yard:renderYard,shop:renderShop,bag:renderBag,album:renderAlbum,book:renderBook,room:renderRoom,ach:renderAchievements};
+    yard:renderYard,shop:renderShop,bag:renderBag,album:renderAlbum,book:renderBook,diary:renderDiary,room:renderRoom,ach:renderAchievements};
   (map[view]||renderToday)();
   window.scrollTo(0,0);
   const fab=$('#fab');
