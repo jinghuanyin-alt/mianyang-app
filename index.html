@@ -120,6 +120,8 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
 .hero{background:var(--brand);color:#fff;border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}
 .hero-date{font-size:13.5px;opacity:.82;letter-spacing:1px}
 .hero-greet{font-size:21px;font-weight:700;margin-top:2px}
+.hero-pet{font-size:13px;opacity:.92;margin-top:7px;display:inline-flex;align-items:center;gap:4px;
+  background:rgba(255,255,255,.16);padding:4px 11px;border-radius:20px;cursor:pointer}
 .hero-start{background:var(--tomato);color:#fff;padding:13px 22px;border-radius:999px;font-weight:700;font-size:15px;white-space:nowrap;display:flex;align-items:center;gap:8px}
 .hero-start svg{width:18px;height:18px;fill:#fff}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
@@ -1621,11 +1623,23 @@ function renderToday(){
   const todayEvs=db.events.filter(e=>e.date===t).sort((a,b)=>(a.time||'99').localeCompare(b.time||'99'));
   const hour=new Date().getHours();
   const greet=hour<6?'夜深了':hour<11?'早上好':hour<14?'中午好':hour<18?'下午好':'晚上好';
+  const pet=db.pet;
+  let petLine='';
+  if(pet.state==='away'){
+    const sn=SCENE_MAP[pet.destination];
+    petLine=`${pet.name}正在「${sn?sn.name:'远方'}」旅行中`;
+  }else if(pet.state==='back'){
+    petLine=`${pet.name}回来啦，带回了明信片和特产`;
+  }else{
+    const act=HOME_ACTIVITIES[pet.homeAct||'idle']||HOME_ACTIVITIES.idle;
+    petLine=`${pet.name}在院子里${act.label}`;
+  }
   $('#page').innerHTML=`
     <div class="hero">
       <div>
         <div class="hero-date">${fmtCN(t).toUpperCase()}</div>
         <div class="hero-greet">${greet}，今天也专注一点</div>
+        <div class="hero-pet" onclick="location.hash='#/yard'">${petLine} · 去看看</div>
       </div>
       <button class="hero-start" id="heroStart" onclick="openTimer()">${ICONS.play}<span id="heroStartText">开始专注</span></button>
     </div>
