@@ -585,7 +585,10 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
 .album-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
 .pc-card{border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--surface)}
 .pc-card.locked{filter:grayscale(1) brightness(.92)}
-.pc-scene{display:block;width:100%;height:auto}
+.pc-scene{display:block;width:100%;height:auto;position:relative}
+.pc-stamp{position:absolute;top:8px;right:8px;width:34px;height:34px;border:2px solid rgba(190,80,70,.62);border-radius:50%;
+  color:rgba(190,80,70,.78);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;
+  text-align:center;transform:rotate(-14deg);background:rgba(255,255,255,.28);line-height:1.1;pointer-events:none}
 .pc-letter{padding:10px 12px 4px;font-size:13px;line-height:1.55;color:var(--ink);
   background:linear-gradient(0deg,var(--green-soft),transparent 70%);font-style:italic}
 .pc-cap{padding:8px 10px;font-size:12px;display:flex;justify-content:space-between;align-items:center}
@@ -1952,9 +1955,9 @@ function renderSettings(){
     <div class="card">
       <div class="card-title">关于</div>
       <div class="setting-row" style="display:block">
-        <div class="hint" style="line-height:1.8">绵羊 · 效率三件套 V3（PWA）<br>
-        已支持：番茄钟、任务、日历、习惯打卡、多设备云同步、离线可用。<br>
-        注意：清理浏览器数据会丢失记录，请定期导出备份。</div>
+        <div class="hint" style="line-height:1.8">绵羊清单 · 陪伴式效率小日子<br>
+        已支持：番茄钟、任务、日历、习惯打卡、四季小院子、绵羊旅行养成、成就与成长、多设备云同步、离线可用。<br>
+        你专注做事，小绵羊替你把日子过成一首慢慢的诗。清理浏览器数据会丢失记录，请定期导出备份。</div>
       </div>
     </div>`;
   bindSettingsActions();
@@ -3147,7 +3150,9 @@ function renderAlbum(){
   if(cards.length){
     html+=`<div class="album-grid">${cards.map(x=>`
       <div class="pc-card">
-        <div class="pc-scene" style="line-height:0">${sceneSVG(x.scene)}</div>
+        <div class="pc-scene" style="line-height:0;position:relative">${sceneSVG(x.scene)}
+          <div class="pc-stamp">绵羊<br>邮局</div>
+        </div>
         <div class="pc-letter">${esc(x.text)}</div>
         <div class="pc-cap">
           <span>${SCENE_MAP[x.scene].name}${x.with?' · 和'+esc(x.with):''}${x.final?' · 归来合影':''}</span>
