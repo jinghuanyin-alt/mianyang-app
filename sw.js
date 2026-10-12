@@ -1,5 +1,5 @@
 /* 绵羊 · service worker —— 离线缓存与更新 */
-const CACHE = 'mianyang-v4.25';
+const CACHE = 'mianyang-v4.26';
 const CORE = ['./', './index.html', './manifest.json',
               './icon.svg', './icon-maskable.svg'];
 
