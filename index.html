@@ -425,6 +425,23 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
 .yard-entry{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 8px;text-align:center;font-size:13px;font-weight:600}
 .yard-entry .sheep{margin:0 auto 6px}
 
+/* ===== 草叶田（亲手收割） ===== */
+.yard-garden{position:absolute;bottom:2%;left:30%;display:flex;gap:8px;z-index:3;align-items:flex-end}
+.tuft{width:50px;height:44px;display:block;cursor:default}
+.tuft.ready{cursor:pointer;animation:tuftSway 2.2s ease-in-out infinite;transform-origin:bottom center}
+.tuft.ready:hover{filter:brightness(1.08)}
+@keyframes tuftSway{0%,100%{transform:rotate(-2.5deg)}50%{transform:rotate(2.5deg)}}
+.tuft-spark{transform-box:fill-box;transform-origin:center;animation:spark 1.4s ease-in-out infinite}
+@keyframes spark{0%,100%{opacity:.35}50%{opacity:1}}
+.tuft-harvest{animation:harvestPop .5s ease-out forwards}
+@keyframes harvestPop{0%{transform:scale(1);opacity:1}100%{transform:scale(1.5) translateY(-22px);opacity:0}}
+.garden-hint{display:inline-flex;align-items:center;gap:5px;background:var(--green-soft);color:var(--green);border-radius:20px;padding:3px 11px;font-size:12px;font-weight:600;cursor:pointer;margin-top:6px}
+.yard-act-bubble{position:absolute;bottom:47%;left:50%;transform:translateX(-50%);
+  background:rgba(255,255,255,.93);border-radius:15px;padding:4px 13px;font-size:12px;
+  font-weight:600;color:var(--ink);z-index:3;white-space:nowrap;max-width:80%;overflow:hidden;text-overflow:ellipsis;box-shadow:0 2px 7px rgba(0,0,0,.1)}
+.yard-act-bubble::after{content:'';position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);
+  border:5px solid transparent;border-top-color:rgba(255,255,255,.93);border-bottom:none}
+
 /* ===== 商店 ===== */
 .shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px}
 .shop-item{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px}
@@ -699,7 +716,8 @@ function migrate(d){
   d.events.forEach(e=>{if(!e.list)e.list='工作';});
   d.coins=Number(d.coins)||0;
   d.pet=Object.assign({name:'小绵',state:'home',hunger:70,mood:70,lastGrow:null,
-    travelId:null,travelStart:null,travelEnd:null,bag:[],pendingMail:[],lastReturn:null},d.pet||{});
+    travelId:null,travelStart:null,travelEnd:null,bag:[],pendingMail:[],lastReturn:null,
+    homeAct:'idle',destHint:null},d.pet||{});
   if(!Array.isArray(d.pet.bag))d.pet.bag=[];
   if(!Array.isArray(d.pet.pendingMail))d.pet.pendingMail=[];
   d.inventory=d.inventory||{};
@@ -1828,12 +1846,18 @@ function clearAll(){
    ============================================================ */
 function sheepSVG(pose,opts){
   opts=opts||{};
-  const sleeping=pose==='sleep', walking=pose==='walk';
+  const sleeping=pose==='sleep';
+  const walking=pose==='walk'||pose==='happy';
+  const graze=pose==='graze';
+  const smiling=pose==='happy'||pose==='graze';
   const hasBag=opts.bag||pose==='pack';
   const wool='#F7F1E6',face='#EFE3D0',leg='#5A5248',dark='#3A332E',blush='#F4B3AC';
   const eyes=sleeping
     ? `<g stroke="${dark}" stroke-width="3" fill="none" stroke-linecap="round">
         <path d="M89 108 q6 6 12 0"/><path d="M119 108 q6 6 12 0"/></g>`
+    : smiling
+    ? `<g stroke="${dark}" stroke-width="3" fill="none" stroke-linecap="round">
+        <path d="M89 105 q6 8 12 0"/><path d="M119 105 q6 8 12 0"/></g>`
     : `<g class="sheep-eye">
         <circle cx="95" cy="108" r="5.6" fill="${dark}"/><circle cx="125" cy="108" r="5.6" fill="${dark}"/>
         <circle cx="96.6" cy="106" r="1.9" fill="#fff"/><circle cx="126.6" cy="106" r="1.9" fill="#fff"/>
@@ -1859,6 +1883,17 @@ function sheepSVG(pose,opts){
       <text x="188" y="70" font-size="20" font-weight="700">Z</text>
       <text x="202" y="52" font-size="25" font-weight="700">Z</text>
     </g>`:'';
+  const actExtra=graze
+    ? `<g transform="translate(110,126)">
+        <path d="M2 2 Q4 -9 8 -12" stroke="#5B9E5B" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+        <path d="M-5 2 Q-7 -8 -11 -11" stroke="#6CAC6C" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+      </g>`
+    : pose==='happy'
+    ? `<g class="sheep-zzz" fill="#E8A87C">
+        <text x="170" y="88" font-size="17" font-weight="700">♪</text>
+        <text x="184" y="70" font-size="22" font-weight="700">♫</text>
+      </g>`
+    : '';
   return `<svg viewBox="0 0 220 200" class="sheep sheep-${walking?'walk':sleeping?'sleep':'idle'}" xmlns="http://www.w3.org/2000/svg">
     <g class="sheep-legs" fill="${leg}">
       <rect x="82" y="150" width="14" height="34" rx="7"/>
@@ -1883,7 +1918,7 @@ function sheepSVG(pose,opts){
     <ellipse cx="136" cy="125" rx="8" ry="5" fill="${blush}" opacity=".75"/>
     <path d="M106 120 l8 0 l-4 5 z" fill="#D9A398"/>
     <path d="M110 125 q-5 6 -10 2 M110 125 q5 6 10 2" stroke="${dark}" fill="none" stroke-width="2" stroke-linecap="round"/>
-    ${acc}${zzz}
+    ${acc}${zzz}${actExtra}
   </svg>`;
 }
 function ownedCos(){
@@ -2155,6 +2190,79 @@ function fmtEnd(iso){
 }
 
 /* ============================================================
+   草叶田（亲手收割）
+   ============================================================ */
+const GARDEN_SLOTS=3, GARDEN_MIN=60, GARDEN_YIELD=12, GARDEN_CLOVER_CHANCE=.08;
+const HOME_ACTIVITIES={
+  idle:{label:'发呆中',desc:'慢悠悠地待着，看看天上的云'},
+  graze:{label:'吃青草',desc:'正低头啃草地上嫩嫩的小草'},
+  walk:{label:'散步',desc:'在院子里踱来踱去，悠闲地溜达'},
+  sleep:{label:'打盹',desc:'吃饱了，蜷成一团打个小盹'},
+  happy:{label:'玩耍',desc:'心情很好，开心地蹦蹦跳跳'}
+};
+const HOME_ACT_LIST=Object.keys(HOME_ACTIVITIES);
+function pickHomeAct(){
+  const p=db.pet,cur=p.homeAct||'idle';let next=cur;
+  while(next===cur){next=HOME_ACT_LIST[Math.floor(Math.random()*HOME_ACT_LIST.length)];}
+  p.homeAct=next;save();
+}
+function gardenSlots(){
+  if(!db.garden||!Array.isArray(db.garden.slots)){
+    const now=Date.now();
+    db.garden={slots:[
+      {readyAt:now-1000},
+      {readyAt:now+20*60000},
+      {readyAt:now+45*60000}
+    ]};
+  }
+  return db.garden.slots;
+}
+function slotReady(s){return Date.now()>=s.readyAt;}
+function gardenReadyCount(){return gardenSlots().filter(slotReady).length;}
+function harvestFirstReady(){
+  const i=gardenSlots().findIndex(slotReady);
+  if(i>=0)harvestSlot(i);
+}
+function harvestSlot(i){
+  const slots=gardenSlots(),s=slots[i];
+  if(!slotReady(s))return;
+  let clover=false;
+  db.coins+=GARDEN_YIELD;
+  if(Math.random()<GARDEN_CLOVER_CHANCE){
+    db.inventory.charm_clover=(db.inventory.charm_clover||0)+1;clover=true;
+  }
+  s.readyAt=Date.now()+GARDEN_MIN*60000;
+  save();coinFly(GARDEN_YIELD);
+  toast(clover?'收割到 '+GARDEN_YIELD+' 草叶，还长出了四叶草':'收割到 '+GARDEN_YIELD+' 草叶');
+  render();
+}
+function grassTuftSVG(ready){
+  if(ready){
+    return `<svg viewBox="0 0 60 50" class="tuft ready">
+      <path d="M14 48 Q15 33 20 31" fill="none" stroke="#5B9E5B" stroke-width="3" stroke-linecap="round"/>
+      <path d="M29 48 Q30 28 32 26" fill="none" stroke="#6CAC6C" stroke-width="3" stroke-linecap="round"/>
+      <path d="M43 48 Q44 33 48 31" fill="none" stroke="#5B9E5B" stroke-width="3" stroke-linecap="round"/>
+      <g transform="translate(17,4) scale(1.05)">
+        <path d="M12 21 v-10 M12 11 C12 6 8 4 4 5 c0 5 3 8 8 6z M12 8 c0 -4 4 -6 8 -5 0 5 -3 7 -8 6z" fill="#5B9E5B"/>
+      </g>
+      <circle class="tuft-spark" cx="12" cy="8" r="2" fill="#FFF6B0"/>
+      <circle class="tuft-spark" cx="48" cy="15" r="1.6" fill="#FFF6B0" style="animation-delay:.6s"/>
+    </svg>`;
+  }
+  return `<svg viewBox="0 0 60 50" class="tuft">
+    <path d="M24 48 Q25 40 28 38" fill="none" stroke="#A8CCA8" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M35 48 Q34 42 32 40" fill="none" stroke="#A8CCA8" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="28" cy="36" r="1.6" fill="#BFE0B0"/>
+  </svg>`;
+}
+function gardenHTML(){
+  const slots=gardenSlots();
+  return `<div class="yard-garden">`+
+    slots.map((s,i)=>`<button onclick="harvestSlot(${i})" style="background:none;border:none;padding:0" title="${slotReady(s)?'点击收割草叶':'草叶还在生长'}">${grassTuftSVG(slotReady(s))}</button>`).join('')+
+    `</div>`;
+}
+
+/* ============================================================
    小院子主页
    ============================================================ */
 const COIN_ICON='<svg viewBox="0 0 24 24" width="17" height="17" style="vertical-align:-3px"><path d="M12 21 v-10 M12 11 C12 6 8 4 4 5 c0 5 3 8 8 6z M12 8 c0 -4 4 -6 8 -5 0 5 -3 7 -8 6z" fill="#5B9E5B"/></svg>';
@@ -2207,11 +2315,13 @@ function renderYard(){
       </div>`;
     }else{
       const food=bagFood();
-      msg=`<div class="yard-msg">${food
+      const readyN=gardenReadyCount();
+      const gardenTip=readyN?`<span class="garden-hint" onclick="harvestFirstReady()">${COIN_ICON} 草叶田有 ${readyN} 棵草叶可以收割</span>`:'';
+      msg=`<div class="yard-msg">${gardenTip}${food
         ? `<b>行囊已经收拾好啦</b>，里面有「${food.name}」，可以送它出门了。
            <div style="margin-top:8px"><button class="btn btn-primary" onclick="sendOff()">送它出发</button>
            <button class="btn btn-ghost" onclick="location.hash='#/bag'">调整行囊</button></div>`
-        : `它在家待着，等你给它准备便当。草叶可以在完成任务、专注和打卡时赚到。
+        : `它在家待着，等你给它准备便当。草叶可以在草叶田收割，或在完成任务、专注和打卡时赚到。
            <div style="margin-top:8px"><button class="btn btn-primary" onclick="location.hash='#/shop'">去商店买便当</button>
            <button class="btn btn-ghost" onclick="location.hash='#/bag'">收拾行囊</button></div>`}</div>`;
     }
@@ -2228,7 +2338,9 @@ function renderYard(){
       <div class="yard-home" style="line-height:0">${HOME_SVG}</div>
       <div class="yard-fence" style="line-height:0">${FENCE_SVG}</div>
       <div class="yard-ground"></div>
-      <div class="yard-sheep">${sheepSVG(p.state==='back'?'pack':'idle',{hat:cos.hat,bow:cos.bow,bag:p.state==='back'})}</div>
+      ${gardenHTML()}
+      ${p.state==='home'?`<div class="yard-act-bubble">${HOME_ACTIVITIES[p.homeAct||'idle'].label} · ${HOME_ACTIVITIES[p.homeAct||'idle'].desc}</div>`:''}
+      <div class="yard-sheep">${sheepSVG(p.state==='back'?'pack':(p.homeAct||'idle'),{hat:cos.hat,bow:cos.bow,bag:p.state==='back'})}</div>
     </div>
     ${msg}
     <div class="yard-entries">${yardEntries()}</div>`;
@@ -2422,6 +2534,12 @@ if(syncCfg.token&&syncCfg.gistId&&syncCfg.auto){
   setTimeout(()=>{syncNow().catch(()=>{});},3000);
 }
 setInterval(()=>{if((location.hash||'#/today')==='#/today'&&!$('#timerOverlay').classList.contains('show'))updateHeroTimer();},1000);
+// 小羊在家随机切换活动
+setInterval(()=>{
+  if(db.pet.state==='home'&&location.hash==='#/yard'&&Math.random()<0.6){
+    pickHomeAct();render();
+  }
+},15000);
 </script>
 </body>
 </html>
