@@ -2430,7 +2430,7 @@ function travelTick(){
       m.got=true;
       const v=Math.random();
       const card={id:uid(),scene:p.destination,date:new Date().toISOString(),
-        rarity:rollRarity(p.travelLuck||0),with:v<0.25?partner():null};
+        rarity:rollRarity(p.travelLuck||0),with:v<0.25?partner():null,seen:false};
       card.text=makeCardText(card);
       db.postcards.push(card);
       changed=true;
@@ -2444,11 +2444,11 @@ function travelTick(){
       const nm=s.souvenirs[idx];
       if(!db.souvenirs.find(x=>x.name===nm))
         db.souvenirs.push({id:uid(),scene:p.destination,name:nm,date:new Date().toISOString(),
-          rarity:idx===0?'common':idx===1?'rare':'epic'});
+          rarity:idx===0?'common':idx===1?'rare':'epic',seen:false});
     }
     if(Math.random()<0.6){
       const fcard={id:uid(),scene:p.destination,date:new Date().toISOString(),
-        rarity:rollRarity(p.travelLuck||0),final:true};
+        rarity:rollRarity(p.travelLuck||0),final:true,seen:false};
       fcard.text=makeCardText(fcard);
       db.postcards.push(fcard);
     }
@@ -2457,6 +2457,59 @@ function travelTick(){
   }
   if(changed)save();
   return changed;
+}
+/* 回家开箱仪式 */
+let _mailItems=[],_mailIndex=0;
+function openHomeMail(){
+  const cards=db.postcards.filter(x=>!x.seen);
+  const sovs=db.souvenirs.filter(x=>!x.seen);
+  _mailItems=[];
+  cards.forEach(c=>_mailItems.push({type:'card',data:c}));
+  sovs.forEach(s=>_mailItems.push({type:'sov',data:s}));
+  if(!_mailItems.length){welcomeHome();return;}
+  _mailIndex=0;
+  showMailStep(0);
+}
+function showMailStep(i){
+  const it=_mailItems[i],isLast=i===_mailItems.length-1;
+  const nav=`<div style="margin-top:14px;display:flex;gap:10px;align-items:center">
+      <button class="btn btn-ghost" onclick="finishMailAll()">跳过</button>
+      <button class="btn btn-primary btn-block" onclick="nextMailStep()">${isLast?'到家啦':'下一个'}</button>
+    </div>
+    <div style="margin-top:10px;font-size:12px;color:var(--ink-2)">${i+1} / ${_mailItems.length}</div>`;
+  if(it.type==='card'){
+    const c=it.data;c.seen=true;
+    openModal(`<div style="text-align:center">
+      <div class="pc-card" style="border-radius:14px;overflow:hidden;text-align:left">
+        <div style="line-height:0">${sceneSVG(c.scene)}</div>
+        <div class="pc-letter">${esc(c.text)}</div>
+        <div class="pc-cap">
+          <span>${SCENE_MAP[c.scene].name}${c.with?' · 和'+esc(c.with):''}${c.final?' · 归来合影':''}</span>
+          <span class="rarity ${c.rarity}">${RARITY_LABEL[c.rarity]}</span>
+        </div>
+      </div>${nav}</div>`);
+  }else{
+    const s=it.data;s.seen=true;
+    openModal(`<div style="text-align:center">
+      <div style="display:flex;justify-content:center;margin-bottom:8px">${souvenirIcon(s.rarity)}</div>
+      <div class="modal-title">${esc(s.name)}</div>
+      <div style="color:var(--ink-2);font-size:13px;margin:6px 0 0">来自${SCENE_MAP[s.scene].name} · ${RARITY_LABEL[s.rarity]}</div>
+      ${nav}</div>`);
+  }
+  save();
+}
+function nextMailStep(){
+  _mailIndex++;
+  if(_mailIndex>=_mailItems.length){finishMail();return;}
+  showMailStep(_mailIndex);
+}
+function finishMail(){
+  closeModal();welcomeHome();
+  toast('它到家啦，好好休息一会儿');
+}
+function finishMailAll(){
+  _mailItems.forEach(x=>x.data.seen=true);
+  save();finishMail();
 }
 function welcomeHome(){
   const p=db.pet;
@@ -2704,10 +2757,9 @@ function renderYard(){
       const newCards=db.postcards.filter(x=>x.date>=p.lastReturn);
       msg=`<div class="yard-msg" style="background:var(--green-soft)">
         <b>${esc(p.name)}回来啦，还带回了礼物！</b><br>
-        快看看它的明信片和新特产吧。
-        <div style="margin-top:8px"><button class="btn btn-primary" onclick="location.hash='#/album'">看明信片</button>
-        <button class="btn btn-ghost" onclick="location.hash='#/book'">看特产</button>
-        <button class="btn btn-ghost" onclick="welcomeHome()">让它休息</button></div>
+        它一路拍了照片、收集了当地的东西，一个个拆开看看吧。
+        <div style="margin-top:8px"><button class="btn btn-primary" onclick="openHomeMail()">迎接它回家</button>
+        <button class="btn btn-ghost" onclick="welcomeHome()">先让它休息</button></div>
       </div>`;
     }else{
       const food=bagFood();
