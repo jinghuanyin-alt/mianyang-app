@@ -554,6 +554,14 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
 .room-sheep{position:absolute;bottom:12%;left:36%;width:130px;z-index:3}
 .room-sheep.in-bed{left:7%;bottom:24%;width:110px}
 .room-back{position:absolute;top:12px;left:12px;z-index:6}
+.room-decor-btn{position:absolute;top:12px;right:12px;z-index:8}
+.furn-btn{background:none;border:none;padding:0;cursor:pointer;border-radius:10px}
+.furn-btn svg{width:100%;height:100%}
+.decorating .furn-btn{outline:2px dashed rgba(232,132,155,.55);outline-offset:3px}
+.furn-hint{position:absolute;top:-8px;right:-8px;background:#E8849B;color:#fff;font-size:11px;
+  width:21px;height:21px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 5px rgba(0,0,0,.2);animation:hintBounce 1.1s ease-in-out infinite}
+@keyframes hintBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
 .room-desc{margin-top:12px;background:var(--surface);border-radius:12px;padding:10px 14px;
   font-size:14px;color:var(--ink-2);border:1px solid var(--line)}
 
@@ -2835,6 +2843,36 @@ const ROOM_RUG='<svg viewBox="0 0 240 56"><ellipse cx="120" cy="28" rx="115" ry=
 const ROOM_LAMP='<svg viewBox="0 0 60 70"><line x1="30" y1="0" x2="30" y2="26" stroke="#8A5A2E" stroke-width="3"/><path d="M14 26 L46 26 L40 50 L20 50 Z" fill="#E8C878"/><ellipse cx="30" cy="52" rx="14" ry="4" fill="#C98A54"/></svg>';
 const ROOM_FRAME='<svg viewBox="0 0 70 60"><rect x="4" y="4" width="62" height="52" rx="4" fill="#C9A072"/><rect x="10" y="10" width="50" height="40" rx="2" fill="#BFE0E0"/><circle cx="24" cy="26" r="7" fill="#F7E0A0"/><path d="M10 44 q10 -14 18 -6 q8 -10 22 -2 v14 h-40z" fill="#8ABF78"/></svg>';
 const ROOM_PLANT='<svg viewBox="0 0 60 80"><path d="M16 78 h28 l-4 -22 h-20z" fill="#C98A5E"/><path d="M30 58 q-2 -18 -15 -24 M30 58 q2 -18 15 -24" stroke="#6FA85E" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="30" cy="30" r="13" fill="#7FBF72"/><circle cx="22" cy="34" r="7" fill="#8AC87C"/><circle cx="38" cy="36" r="6" fill="#86C476"/></svg>';
+const BED_PINK='<svg viewBox="0 0 140 100"><rect x="8" y="26" width="18" height="62" rx="6" fill="#E8D4D8"/><rect x="10" y="42" width="122" height="46" rx="8" fill="#F0E0E4"/><rect x="16" y="48" width="110" height="34" rx="8" fill="#FDF6F8"/><rect x="18" y="52" width="38" height="26" rx="10" fill="#F8C8D4"/><rect x="52" y="54" width="72" height="28" rx="6" fill="#E8B8C8"/><rect x="10" y="86" width="10" height="12" fill="#D8BEC4"/><rect x="120" y="86" width="10" height="12" fill="#D8BEC4"/></svg>';
+const BED_BLUE='<svg viewBox="0 0 140 100"><rect x="8" y="26" width="18" height="62" rx="6" fill="#C8D8E4"/><rect x="10" y="42" width="122" height="46" rx="8" fill="#D8E4EE"/><rect x="16" y="48" width="110" height="34" rx="8" fill="#F2F8FC"/><rect x="18" y="52" width="38" height="26" rx="10" fill="#C8DCEC"/><rect x="52" y="54" width="72" height="28" rx="6" fill="#A8C8E0"/><rect x="10" y="86" width="10" height="12" fill="#B8CAD8"/><rect x="120" y="86" width="10" height="12" fill="#B8CAD8"/></svg>';
+const RUG_PINK='<svg viewBox="0 0 240 56"><ellipse cx="120" cy="28" rx="115" ry="24" fill="#E8B8C8"/><ellipse cx="120" cy="28" rx="95" ry="18" fill="#F0D0DC" opacity=".85"/></svg>';
+const RUG_GREEN='<svg viewBox="0 0 240 56"><ellipse cx="120" cy="28" rx="115" ry="24" fill="#A8C8B0"/><ellipse cx="120" cy="28" rx="95" ry="18" fill="#C4DCC8" opacity=".85"/></svg>';
+const PLANT_FLOWER='<svg viewBox="0 0 60 80"><path d="M16 78 h28 l-4 -22 h-20z" fill="#C98A5E"/><path d="M30 58 q-2 -16 -13 -22 M30 58 q2 -16 13 -22" stroke="#6FA85E" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="30" cy="32" r="11" fill="#7FBF72"/><g fill="#F4A8C0"><circle cx="18" cy="30" r="4.5"/><circle cx="42" cy="32" r="4.5"/><circle cx="30" cy="22" r="4.5"/></g><g fill="#FFE8A0"><circle cx="18" cy="30" r="1.6"/><circle cx="42" cy="32" r="1.6"/><circle cx="30" cy="22" r="1.6"/></g></svg>';
+const PLANT_SUCC='<svg viewBox="0 0 60 80"><path d="M16 78 h28 l-4 -22 h-20z" fill="#B88A6E"/><g fill="#7FB890"><ellipse cx="30" cy="48" rx="15" ry="9"/><ellipse cx="22" cy="42" rx="9" ry="7" transform="rotate(-32 22 42)"/><ellipse cx="38" cy="42" rx="9" ry="7" transform="rotate(32 38 42)"/><ellipse cx="30" cy="38" rx="8" ry="9"/></g><g fill="#94CAA6"><ellipse cx="30" cy="45" rx="5" ry="7"/></g></svg>';
+const LAMP_PINK='<svg viewBox="0 0 60 70"><line x1="30" y1="0" x2="30" y2="26" stroke="#C098A0" stroke-width="3"/><path d="M14 26 L46 26 L40 50 L20 50 Z" fill="#F0C8D4"/><ellipse cx="30" cy="52" rx="14" ry="4" fill="#D8A8B8"/></svg>';
+const LAMP_BLUE='<svg viewBox="0 0 60 70"><line x1="30" y1="0" x2="30" y2="26" stroke="#8A9AAE" stroke-width="3"/><path d="M14 26 L46 26 L40 50 L20 50 Z" fill="#B8D4E8"/><ellipse cx="30" cy="52" rx="14" ry="4" fill="#98B8D4"/></svg>';
+const FURNITURE_STYLES={
+  bed:[['原木',ROOM_BED],['粉甜',BED_PINK],['蓝海',BED_BLUE]],
+  rug:[['米绒',ROOM_RUG],['粉色',RUG_PINK],['青草',RUG_GREEN]],
+  plant:[['绿叶',ROOM_PLANT],['开花',PLANT_FLOWER],['多肉',PLANT_SUCC]],
+  lamp:[['暖黄',ROOM_LAMP],['粉灯',LAMP_PINK],['蓝灯',LAMP_BLUE]]
+};
+function roomDecor(){if(!db.roomDecor)db.roomDecor={bed:0,rug:0,plant:0,lamp:0};return db.roomDecor;}
+function furnSvg(key){const d=roomDecor();return FURNITURE_STYLES[key][d[key]||0][1];}
+function furnName(key){const d=roomDecor();return FURNITURE_STYLES[key][d[key]||0][0];}
+let decorateMode=false;
+function cycleFurn(key){
+  const d=roomDecor();
+  d[key]=((d[key]||0)+1)%FURNITURE_STYLES[key].length;
+  save();SFX.tap();renderRoom();
+  toast('换成「'+furnName(key)+'」啦');
+}
+function toggleDecorate(){
+  decorateMode=!decorateMode;
+  renderRoom();
+  toast(decorateMode?'布置模式：点家具换一换，再点「完成」结束':'已结束布置');
+}
+
 
 function season(){
   const m=new Date().getMonth()+1;
@@ -3074,16 +3112,20 @@ function renderRoom(){
   const head=`<div class="page-head"><div class="page-title">小羊的家</div>
     <div class="page-sub">它的小窝，暖乎乎的</div></div>`;
   const sheepPose=p.state==='away'?'idle':inBed?'sleep':act;
-  const scene=`<div class="room">
+  const fw=(key,cls)=>decorateMode
+    ?`<button class="furn-btn ${cls}" onclick="cycleFurn('${key}')" style="line-height:0">${furnSvg(key)}<span class="furn-hint">换</span></button>`
+    :`<div class="${cls}" style="line-height:0">${furnSvg(key)}</div>`;
+  const scene=`<div class="room ${decorateMode?'decorating':''}">
     <button class="room-back btn btn-ghost" onclick="location.hash='#/yard'">‹ 院子</button>
-    <div class="room-lamp" style="line-height:0">${ROOM_LAMP}</div>
+    <button class="room-decor-btn btn ${decorateMode?'btn-primary':'btn-ghost'}" onclick="toggleDecorate()">${decorateMode?'完成':'布置'}</button>
+    ${fw('lamp','room-lamp')}
     <div class="room-window" style="line-height:0">${ROOM_WINDOW}</div>
     <div class="room-shelf" style="line-height:0">${ROOM_SHELF}</div>
     <div class="room-desk" style="line-height:0">${ROOM_DESK}</div>
     <div class="room-frame" style="line-height:0">${ROOM_FRAME}</div>
-    <div class="room-plant" style="line-height:0">${ROOM_PLANT}</div>
-    <div class="room-rug" style="line-height:0">${ROOM_RUG}</div>
-    <div class="room-bed" style="line-height:0">${ROOM_BED}</div>
+    ${fw('plant','room-plant')}
+    ${fw('rug','room-rug')}
+    ${fw('bed','room-bed')}
     ${p.state==='away'?'':`<div class="room-sheep ${inBed?'in-bed':''}">${sheepSVG(sheepPose,{hat:cos.hat,bow:cos.bow})}</div>`}
   </div>`;
   let desc;
