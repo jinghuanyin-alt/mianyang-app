@@ -572,6 +572,8 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
 .pc-card{border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--surface)}
 .pc-card.locked{filter:grayscale(1) brightness(.92)}
 .pc-scene{display:block;width:100%;height:auto}
+.pc-letter{padding:10px 12px 4px;font-size:13px;line-height:1.55;color:var(--ink);
+  background:linear-gradient(0deg,var(--green-soft),transparent 70%);font-style:italic}
 .pc-cap{padding:8px 10px;font-size:12px;display:flex;justify-content:space-between;align-items:center}
 .rarity{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px}
 .rarity.common{background:var(--line-soft);color:var(--ink-2)}
@@ -876,6 +878,34 @@ const SCENES=[
   {id:'desert',name:'远方沙漠',souvenirs:['椰枣','沙画瓶','小驼铃']}
 ];
 const SCENE_MAP={};SCENES.forEach(s=>SCENE_MAP[s.id]=s);
+const SCENE_CARD_TEXT={
+  mountain:['爬到了很高的地方，云就在脚底下，软软的。','山顶的风凉凉的，我把围巾裹紧了一点。','站在山顶看了很久，天特别特别蓝。'],
+  forest:['森林里雾蒙蒙的，阳光从树叶缝里漏下来。','踩到厚厚的落叶，沙沙地响。','林子里有好多蘑菇，我小心地绕开了。'],
+  sea:['海好大呀，浪一层层地跑过来。','我在沙滩上踩了一串小脚印。','海边的风是咸咸的，我捡了个小贝壳。'],
+  lake:['湖面安安静静的，像一面大镜子。','我在湖边坐了一会儿，有鱼跳出水面。','芦苇晃呀晃，小船在水面轻轻摇。'],
+  onsen:['泡在暖乎乎的温泉里，困意一下子就来了。','温泉乡的烟囱冒着白白的热气。','暖到耳朵尖尖都红了，好舒服。'],
+  snow:['下雪啦，到处白茫茫的，我踩出一串脚印。','雪花落在鼻子上，凉凉的一下子就化了。','堆了一个小小的雪人，和我一样圆。'],
+  city:['老城里的巷子弯弯绕绕，走了好久。','街角飘来烤东西的香味，我停下来闻了闻。','墙上爬满了爬山虎，红红的真好看。'],
+  sakura:['樱花落在身上，我在花树下坐了好久。','风一吹，花瓣像粉色的雪一样。','捡到一片完整的樱花瓣，想带回去给你看。'],
+  countryside:['乡野的田埂上开满了小花。','远处有炊烟，我慢慢走过去。','田埂软软的，风里都是青草的味道。'],
+  desert:['沙子细细的，踩上去暖暖的。','沙漠好安静，只有风的声音。','远处的沙丘一道一道，像波浪。']
+};
+const WITH_CARD_TEXT=[
+  '路上遇到了%s，我们一起走了一段。',
+  '%s带我去看了一个好看的地方。',
+  '和%s并排坐着，谁也没说话，但很开心。'
+];
+const FINAL_CARD_TEXT=[
+  '玩得很开心，不过有点想你了，这就回家。',
+  '背包鼓鼓的，心里满满的，我要回来啦。',
+  '太阳快落山了，我往家的方向走。'
+];
+function makeCardText(x){
+  const pick=a=>a[Math.floor(Math.random()*a.length)];
+  if(x.final)return pick(FINAL_CARD_TEXT);
+  if(x.with)return pick(WITH_CARD_TEXT).replace('%s',x.with);
+  return pick(SCENE_CARD_TEXT[x.scene]||['这里的风景真好，想寄给你看。']);
+}
 const RARITY_LABEL={common:'普通',rare:'少见',epic:'珍贵'};
 const AWARD_RULE={pomo:10,task:15,repeat:8,habit:6};
 const GROW_PER_HOUR=3, GROW_DAILY_CAP=30;
@@ -2399,8 +2429,10 @@ function travelTick(){
     if(!m.got&&now>=new Date(m.at).getTime()){
       m.got=true;
       const v=Math.random();
-      db.postcards.push({id:uid(),scene:p.destination,date:new Date().toISOString(),
-        rarity:rollRarity(p.travelLuck||0),with:v<0.25?partner():null});
+      const card={id:uid(),scene:p.destination,date:new Date().toISOString(),
+        rarity:rollRarity(p.travelLuck||0),with:v<0.25?partner():null};
+      card.text=makeCardText(card);
+      db.postcards.push(card);
       changed=true;
     }
   });
@@ -2414,9 +2446,12 @@ function travelTick(){
         db.souvenirs.push({id:uid(),scene:p.destination,name:nm,date:new Date().toISOString(),
           rarity:idx===0?'common':idx===1?'rare':'epic'});
     }
-    if(Math.random()<0.6)
-      db.postcards.push({id:uid(),scene:p.destination,date:new Date().toISOString(),
-        rarity:rollRarity(p.travelLuck||0),final:true});
+    if(Math.random()<0.6){
+      const fcard={id:uid(),scene:p.destination,date:new Date().toISOString(),
+        rarity:rollRarity(p.travelLuck||0),final:true};
+      fcard.text=makeCardText(fcard);
+      db.postcards.push(fcard);
+    }
     p.state='back';p.lastReturn=new Date().toISOString();
     changed=true;
   }
@@ -2986,6 +3021,9 @@ function renderBag(){
 function renderAlbum(){
   travelTick();
   const cards=db.postcards.slice().sort((a,b)=>b.date.localeCompare(a.date));
+  let needText=false;
+  cards.forEach(x=>{if(!x.text){x.text=makeCardText(x);needText=true;}});
+  if(needText)save();
   const scenesGot=SCENES.filter(s=>db.postcards.some(x=>x.scene===s.id)).length;
   let html=`<div class="page-head"><div class="page-title">明信片</div>
     <div class="page-sub">已收集 ${cards.length} 张 · 到过 ${scenesGot}/${SCENES.length} 个地方</div></div>`;
@@ -2993,6 +3031,7 @@ function renderAlbum(){
     html+=`<div class="album-grid">${cards.map(x=>`
       <div class="pc-card">
         <div class="pc-scene" style="line-height:0">${sceneSVG(x.scene)}</div>
+        <div class="pc-letter">${esc(x.text)}</div>
         <div class="pc-cap">
           <span>${SCENE_MAP[x.scene].name}${x.with?' · 和'+esc(x.with):''}${x.final?' · 归来合影':''}</span>
           <span class="rarity ${x.rarity}">${RARITY_LABEL[x.rarity]}</span>
