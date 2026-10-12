@@ -761,6 +761,7 @@ const DEFAULT_DATA={
   stats:{trips:0,visitors:0,harvests:0},
   achievements:{},
   desk:[],
+  createdAt:null,
   updatedAt:null
 };
 /* ---------- 云同步（GitHub Gist，私密、自动双向） ---------- */
@@ -872,6 +873,7 @@ function migrate(d){
   d.desk=Array.isArray(d.desk)?d.desk:[];
   d.stats=d.stats||{trips:0,visitors:0,harvests:0};
   d.achievements=d.achievements||{};
+  if(!d.createdAt)d.createdAt=new Date().toISOString();
   return d;
 }
 function load(){
@@ -1640,6 +1642,12 @@ function renderHabits(){
 /* ============================================================
    今日页
    ============================================================ */
+function companionDays(){
+  if(!db.createdAt)return 1;
+  const start=new Date(db.createdAt).toISOString().slice(0,10);
+  const diff=new Date(todayStr()).getTime()-new Date(start).getTime();
+  return Math.max(1,Math.round(diff/86400000)+1);
+}
 function renderToday(){
   const t=todayStr();
   const pomos=todayPomodoros();
@@ -1665,7 +1673,7 @@ function renderToday(){
   $('#page').innerHTML=`
     <div class="hero">
       <div>
-        <div class="hero-date">${fmtCN(t).toUpperCase()}</div>
+        <div class="hero-date">${fmtCN(t).toUpperCase()} · 陪伴第 ${companionDays()} 天</div>
         <div class="hero-greet">${greet}，今天也专注一点</div>
         <div class="hero-pet" onclick="location.hash='#/yard'">${petLine} · 去看看</div>
       </div>
