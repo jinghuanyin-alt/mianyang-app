@@ -3087,7 +3087,34 @@ function renderBook(){
 
 
 
+function dailySurprise(){
+  const today=todayStr();
+  if(db.lastDailyEvent===today)return;
+  db.lastDailyEvent=today;
+  const show=(icon,text)=>setTimeout(()=>openModal(`
+    <div style="text-align:center;padding:8px">
+      <div style="display:flex;justify-content:center;margin-bottom:8px">${icon}</div>
+      <div class="modal-title">今日小惊喜</div>
+      <div style="color:var(--ink-2);font-size:14px;margin:10px 0 18px">${text}</div>
+      <button class="btn btn-primary btn-block" onclick="closeModal()">收下啦</button>
+    </div>`),900);
+  const r=Math.random();
+  if(r<0.4){
+    const n=8+Math.floor(Math.random()*12);db.coins+=n;save();
+    show(COIN_ICON,'门口有一小捧草叶，大概是它之前落下的，+'+n+' 草叶');
+  }else if(r<0.7){
+    const n=6+Math.floor(Math.random()*10);db.coins+=n;save();
+    show(COIN_ICON,'草丛里有东西在闪光，捡到 '+n+' 草叶');
+  }else if(r<0.85){
+    db.inventory.charm_clover=(db.inventory.charm_clover||0)+1;save();
+    show(itemIcon('charm_clover'),'屋檐下长出一株四叶草，今天会有好运');
+  }else save();
+}
 function render(){
+  // 无论在哪个页面，都推进旅行、访客、自主出发
+  const before=db.pet.state;
+  travelTick();visitorTick();autoTick();
+  if(before!==db.pet.state||db.pet.state!==before)save();
   const view=location.hash.replace('#/','')||'today';
   const map={today:renderToday,calendar:renderCalendar,tasks:renderTasks,habits:renderHabits,stats:renderStats,settings:renderSettings,
     yard:renderYard,shop:renderShop,bag:renderBag,album:renderAlbum,book:renderBook,room:renderRoom,ach:renderAchievements};
@@ -3101,6 +3128,7 @@ const _growGain=settleGrow();
 if(_growGain)localStorage.setItem(STORE_KEY,JSON.stringify(db));
 renderNav();renderBottomNav();render();
 maybeOnboard();
+dailySurprise();
 if('serviceWorker' in navigator && (location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1')){
   window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 }
