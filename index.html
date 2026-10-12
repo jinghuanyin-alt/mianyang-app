@@ -2007,6 +2007,13 @@ function renderSettings(){
       </div>
     </div>
     <div class="card">
+      <div class="card-title">安装 App</div>
+      <div class="setting-row">
+        <div><label>装到手机或电脑桌面</label><div class="hint">像 App 一样打开，离线可用、不占浏览器标签</div></div>
+        <button class="btn btn-primary btn-sm" onclick="installApp()">${isStandalone()?'已安装':'立即安装'}</button>
+      </div>
+    </div>
+    <div class="card">
       <div class="card-title">关于</div>
       <div class="setting-row" style="display:block">
         <div class="hint" style="line-height:1.8">绵羊清单 · 陪伴式效率小日子<br>
@@ -3459,6 +3466,32 @@ setInterval(()=>{
     if(before!==db.pet.state)render();
   }
 },5000);
+// 安装到桌面/手机（PWA）
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;});
+window.addEventListener('appinstalled',()=>{deferredPrompt=null;toast('已安装到桌面，谢谢陪伴');});
+function isStandalone(){return window.matchMedia('(display-mode: standalone)').matches||navigator.standalone;}
+function installApp(){
+  if(isStandalone()){toast('已经在 App 里啦');return;}
+  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
+  if(deferredPrompt){
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.finally(()=>{deferredPrompt=null;});
+  }else if(isIOS){
+    openModal(`<div class="modal-title">添加到主屏幕</div>
+      <div class="hint" style="line-height:2;font-size:14px">用 Safari 打开本页：<br>
+      1. 点底部的「分享」按钮（方框向上箭头）<br>
+      2. 选「添加到主屏幕」<br>
+      3. 点「添加」，就能像 App 一样打开啦</div>
+      <div class="modal-actions"><button class="btn btn-primary" onclick="closeModal()">好的</button></div>`);
+  }else{
+    openModal(`<div class="modal-title">安装绵羊清单</div>
+      <div class="hint" style="line-height:2;font-size:14px">点浏览器右上角的「菜单」（三个点）<br>
+      选择「添加到主屏幕」或「安装应用」<br>
+      就能像 App 一样在桌面打开，还能离线使用</div>
+      <div class="modal-actions"><button class="btn btn-primary" onclick="closeModal()">好的</button></div>`);
+  }
+}
 </script>
 </body>
 </html>
