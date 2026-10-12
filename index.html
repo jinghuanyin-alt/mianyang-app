@@ -303,6 +303,9 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
 .ring-bg{fill:none;stroke:rgba(255,255,255,.12);stroke-width:10}
 .ring-fg{fill:none;stroke:var(--tomato);stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .6s linear}
 .ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.timer-pet{position:absolute;right:-10px;bottom:0;width:70px;line-height:0;
+  filter:drop-shadow(0 4px 6px rgba(0,0,0,.25));animation:petFloat 3s ease-in-out infinite}
+@keyframes petFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 .ring-time{font-size:60px;font-weight:700;font-family:var(--mono);letter-spacing:1px;line-height:1}
 .ring-task{font-size:14px;color:rgba(255,255,255,.65);margin-top:8px;max-width:80%;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ring-cycle{font-size:12.5px;color:rgba(255,255,255,.5);margin-top:4px}
@@ -668,6 +671,7 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
         <div class="ring-task" id="ringTask">未选择任务</div>
         <div class="ring-cycle" id="ringCycle"></div>
       </div>
+      <div class="timer-pet" id="timerPet"></div>
     </div>
     <div class="timer-tasksel">
       <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 10l3 3 5-6"/></svg>
@@ -1237,6 +1241,14 @@ function updateRing(){
   $('#ringTime').textContent=pad(m)+':'+pad(s);
   const t=timer.taskId?db.tasks.find(x=>x.id===timer.taskId):null;
   $('#ringTask').textContent=t?t.title:'未选择任务';
+  updateTimerPet();
+}
+function updateTimerPet(){
+  const el=$('#timerPet');if(!el)return;
+  let pose;
+  if(timer.mode==='focus')pose=timer.running?'idle':'happy';
+  else pose=timer.running?'sleep':'happy';
+  el.innerHTML=sheepSVG(pose,{hat:db.inventory.cos_hat,bow:db.inventory.cos_bow});
 }
 function todayPomodoros(){return db.pomodoros.filter(p=>p.completed===1&&p.start_time.slice(0,10)===todayStr()).length;}
 
