@@ -2547,7 +2547,7 @@ function showMailStep(i){
   }else{
     const s=it.data;s.seen=true;
     openModal(`<div style="text-align:center">
-      <div style="display:flex;justify-content:center;margin-bottom:8px">${souvenirIcon(s.rarity)}</div>
+      <div style="display:flex;justify-content:center;margin-bottom:8px">${souvenirIconByName(s.name,s.rarity)}</div>
       <div class="modal-title">${esc(s.name)}</div>
       <div style="color:var(--ink-2);font-size:13px;margin:6px 0 0">来自${SCENE_MAP[s.scene].name} · ${RARITY_LABEL[s.rarity]}</div>
       ${nav}</div>`);
@@ -3176,6 +3176,38 @@ function renderAlbum(){
 /* ============================================================
    特产图鉴
    ============================================================ */
+const SOUVENIR_ICONS={
+'山核桃':'<svg viewBox="0 0 48 48"><circle cx="24" cy="26" r="15" fill="#A9764E"/><path d="M24 13 q-5 12 0 26 M24 13 q5 12 0 26" stroke="#7A4E30" stroke-width="2" fill="none"/><circle cx="19" cy="20" r="2" fill="#C99868"/></svg>',
+'雾顶野茶':'<svg viewBox="0 0 48 48"><rect x="14" y="14" width="20" height="26" rx="4" fill="#6FA85E"/><rect x="13" y="12" width="22" height="5" rx="2" fill="#5B9250"/><path d="M20 24 q4 -6 8 0 M20 30 q4 -6 8 0" stroke="#DCEFC8" stroke-width="1.6" fill="none"/></svg>',
+'岩上灵芝':'<svg viewBox="0 0 48 48"><path d="M24 38 Q14 36 12 24 Q20 18 24 24 Q28 16 38 20 Q36 34 24 38Z" fill="#C98A6E"/><path d="M24 36 v8" stroke="#8A5A40" stroke-width="3"/><circle cx="19" cy="26" r="1.5" fill="#E8B898"/></svg>',
+'松果':'<svg viewBox="0 0 48 48"><path d="M24 12 Q34 20 34 30 Q24 40 14 30 Q14 20 24 12Z" fill="#A9744A"/><path d="M24 18 v18 M24 24 l-6-4 M24 24 l6-4 M24 30 l-7-4 M24 30 l7-4" stroke="#7A4E2E" stroke-width="1.8" fill="none"/><path d="M24 12 l-2-6 M24 12 l2-6" stroke="#5B9E5B" stroke-width="2"/></svg>',
+'野莓酱':'<svg viewBox="0 0 48 48"><rect x="15" y="14" width="18" height="26" rx="4" fill="#E8B8C8"/><rect x="14" y="12" width="20" height="5" rx="2" fill="#C98AA0"/><circle cx="21" cy="26" r="3" fill="#B84E6E"/><circle cx="27" cy="30" r="3" fill="#B84E6E"/></svg>',
+'森林菌菇':'<svg viewBox="0 0 48 48"><path d="M10 24 Q24 8 38 24Z" fill="#D96E5B"/><rect x="21" y="24" width="6" height="14" fill="#F2E6D0"/><circle cx="18" cy="20" r="2" fill="#fff"/><circle cx="28" cy="18" r="1.6" fill="#fff"/></svg>',
+'小贝壳':'<svg viewBox="0 0 48 48"><path d="M24 14 Q38 18 38 32 Q30 38 24 36 Q18 38 10 32 Q10 18 24 14Z" fill="#F4D8C0"/><path d="M24 16 v20 M24 18 q-7 4-10 12 M24 18 q7 4 10 12 M24 18 q-3 8-3 18 M24 18 q3 8 3 18" stroke="#D9A888" stroke-width="1.5" fill="none"/></svg>',
+'海盐糖':'<svg viewBox="0 0 48 48"><rect x="16" y="16" width="16" height="16" rx="3" transform="rotate(45 24 24)" fill="#A8D8E8"/><path d="M16 16 h16 v16 h-16z" transform="rotate(45 24 24)" fill="none" stroke="#7AB8D0" stroke-width="1.5"/></svg>',
+'彩色珊瑚':'<svg viewBox="0 0 48 48"><path d="M24 40 v-18 M24 26 q-10-4-10-12 M24 22 q10-4 10-12 M24 32 q-8 2-12-4 M24 34 q8 2 12-4" stroke="#E88A9E" stroke-width="4" fill="none" stroke-linecap="round"/></svg>',
+'莲子':'<svg viewBox="0 0 48 48"><path d="M24 12 Q36 14 36 26 Q36 38 24 38 Q12 38 12 26 Q12 14 24 12Z" fill="#9CC684"/><circle cx="20" cy="22" r="2" fill="#6E9A58"/><circle cx="28" cy="22" r="2" fill="#6E9A58"/><circle cx="24" cy="28" r="2" fill="#6E9A58"/><circle cx="20" cy="32" r="1.8" fill="#6E9A58"/><circle cx="28" cy="32" r="1.8" fill="#6E9A58"/></svg>',
+'菱角':'<svg viewBox="0 0 48 48"><path d="M24 14 Q34 20 36 30 L30 32 Q28 26 24 26 Q20 26 18 32 L12 30 Q14 20 24 14Z" fill="#7A4E36"/><path d="M12 30 l-6 4 M36 30 l6 4" stroke="#5A3624" stroke-width="2"/></svg>',
+'芦苇编篮':'<svg viewBox="0 0 48 48"><path d="M12 18 h24 l-3 20 h-18z" fill="#C9A868"/><path d="M14 24 h20 M15 30 h18" stroke="#A98848" stroke-width="1.6"/><path d="M10 18 q14-8 28 0" fill="none" stroke="#B8975A" stroke-width="2"/></svg>',
+'温泉馒头':'<svg viewBox="0 0 48 48"><ellipse cx="24" cy="28" rx="16" ry="12" fill="#F2E8D8"/><path d="M14 24 q10 6 20 0" stroke="#D9C8B0" stroke-width="1.6" fill="none"/><path d="M20 16 q0-4-2-6 M26 16 q0-4 2-6" stroke="#B8C8C0" stroke-width="1.6" fill="none"/></svg>',
+'柚子汤包':'<svg viewBox="0 0 48 48"><circle cx="24" cy="26" r="15" fill="#E8D878"/><circle cx="24" cy="11" r="2.5" fill="#8A6A40"/><circle cx="19" cy="22" r="2" fill="#F4E8A0"/></svg>',
+'木质御守':'<svg viewBox="0 0 48 48"><rect x="15" y="12" width="18" height="26" rx="6" fill="#D98A6E"/><path d="M15 18 h18" stroke="#B86A50" stroke-width="1.6"/><circle cx="24" cy="26" r="3" fill="#F4E0B0"/><path d="M24 38 v6 M20 44 h8" stroke="#B86A50" stroke-width="1.6"/></svg>',
+'雪绒花':'<svg viewBox="0 0 48 48"><g fill="#EAF2F8" stroke="#B8CCE0" stroke-width="1"><circle cx="24" cy="16" r="6"/><circle cx="16" cy="24" r="6"/><circle cx="32" cy="24" r="6"/><circle cx="24" cy="32" r="6"/><circle cx="24" cy="24" r="4"/></g></svg>',
+'冰窗花':'<svg viewBox="0 0 48 48"><g stroke="#9CC4E0" stroke-width="2" stroke-linecap="round"><path d="M24 8 v32 M10 16 l28 16 M38 16 l-28 16"/></g></svg>',
+'热可可豆':'<svg viewBox="0 0 48 48"><path d="M14 20 h20 l-2 16 h-16z" fill="#C98A6E"/><path d="M34 22 h4 q4 0 4 4 q0 4-4 4 h-4" fill="none" stroke="#C98A6E" stroke-width="2.5"/><path d="M18 14 q0-4 3-6 M24 14 q0-4-3-6" stroke="#A9A8A0" stroke-width="1.5" fill="none"/></svg>',
+'老邮票':'<svg viewBox="0 0 48 48"><rect x="12" y="14" width="24" height="20" rx="1" fill="#E8D8B8"/><rect x="17" y="18" width="10" height="12" fill="#8AB0C8"/><circle cx="33" cy="20" r="3" fill="#D96E5B"/></svg>',
+'桂花糖片':'<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="14" fill="#F4E8B8"/><circle cx="20" cy="20" r="1.5" fill="#E8A840"/><circle cx="28" cy="22" r="1.5" fill="#E8A840"/><circle cx="24" cy="28" r="1.5" fill="#E8A840"/></svg>',
+'旧书店签':'<svg viewBox="0 0 48 48"><rect x="19" y="8" width="10" height="32" rx="2" fill="#C9A878"/><circle cx="24" cy="12" r="2" fill="#8A6A48"/><path d="M22 20 h4 M22 26 h4" stroke="#8A6A48" stroke-width="1.4"/></svg>',
+'樱花饼':'<svg viewBox="0 0 48 48"><circle cx="24" cy="26" r="14" fill="#F4C8D8"/><path d="M24 16 q-4 6 0 10 q4-4 0-10" fill="#E898B8"/><path d="M24 12 v-4" stroke="#6E9A58" stroke-width="1.5"/></svg>',
+'樱花瓣':'<svg viewBox="0 0 48 48"><path d="M24 10 Q32 18 24 38 Q16 18 24 10Z" fill="#F4B8D0"/><path d="M24 16 v18" stroke="#E898B8" stroke-width="1.2"/></svg>',
+'玻璃风铃':'<svg viewBox="0 0 48 48"><line x1="24" y1="6" x2="24" y2="14" stroke="#8A8A8A" stroke-width="1.5"/><path d="M16 16 h16 l-3 14 h-10z" fill="#A8D4E8" opacity=".85"/><circle cx="24" cy="20" r="2" fill="#E8708A"/><path d="M24 30 v8 M24 38 l-3 4 M24 38 l3 4" stroke="#E8A840" stroke-width="1.4"/></svg>',
+'麦穗':'<svg viewBox="0 0 48 48"><line x1="24" y1="40" x2="24" y2="12" stroke="#C9A848" stroke-width="2.5"/><path d="M24 14 l-6 4 M24 14 l6 4 M24 20 l-7 4 M24 20 l7 4 M24 26 l-6 4 M24 26 l6 4" stroke="#D9B858" stroke-width="2.5" stroke-linecap="round"/></svg>',
+'烤红薯':'<svg viewBox="0 0 48 48"><path d="M14 24 Q14 14 24 14 Q36 12 36 26 Q36 36 24 36 Q14 36 14 24Z" fill="#B85E48"/><path d="M20 22 q4 4 8 0" stroke="#8A3E2E" stroke-width="1.6" fill="none"/></svg>',
+'稻草人挂饰':'<svg viewBox="0 0 48 48"><circle cx="24" cy="16" r="7" fill="#E8C878"/><path d="M14 24 h20 l-2 16 h-16z" fill="#C9A868"/><path d="M10 24 h28" stroke="#8A6A48" stroke-width="2.5"/><circle cx="21" cy="15" r="1.2" fill="#3A332E"/><circle cx="27" cy="15" r="1.2" fill="#3A332E"/></svg>',
+'椰枣':'<svg viewBox="0 0 48 48"><circle cx="24" cy="26" r="12" fill="#8A5A3E"/><path d="M20 22 q4 4 8 0" stroke="#6A3E28" stroke-width="1.5" fill="none"/><circle cx="20" cy="22" r="1.5" fill="#A87858"/></svg>',
+'沙画瓶':'<svg viewBox="0 0 48 48"><path d="M18 12 h12 v6 l4 8 v16 h-20 v-16 l4-8z" fill="#D8C8A8" opacity=".85"/><path d="M16 30 h16 M16 35 h16 M16 25 h16" stroke="#E8A840" stroke-width="1.6"/><path d="M18 12 h12" stroke="#8A8A8A" stroke-width="2"/></svg>',
+'小驼铃':'<svg viewBox="0 0 48 48"><path d="M24 10 q12 0 12 16 l3 8 h-30 l3-8 q0-16 12-16Z" fill="#E8B848"/><path d="M20 34 h8" stroke="#B88830" stroke-width="1.6"/><circle cx="24" cy="38" r="2.5" fill="#8A6A28"/></svg>'
+};
 function souvenirIcon(rarity){
   const c=rarity==='epic'?'#D9A83E':rarity==='rare'?'#5B9EBD':'#8ABF84';
   return `<svg viewBox="0 0 48 48" class="item-icon">
@@ -3183,6 +3215,9 @@ function souvenirIcon(rarity){
     <rect x="10" y="16" width="28" height="7" rx="2" fill="${c}"/>
     <path d="M24 16 v26 M24 18 c-6 -8 -12 -2 -6 2 M24 18 c6 -8 12 -2 6 2" stroke="#fff" stroke-width="2" fill="none"/>
   </svg>`;
+}
+function souvenirIconByName(name,rarity){
+  return SOUVENIR_ICONS[name]?SOUVENIR_ICONS[name]:souvenirIcon(rarity);
 }
 function renderBook(){
   travelTick();
@@ -3197,7 +3232,7 @@ function renderBook(){
       const have=db.souvenirs.find(x=>x.name===nm);
       const rarity=idx===0?'common':idx===1?'rare':'epic';
       html+=`<div class="sv-cell ${have?'':'locked'}">
-        ${have?souvenirIcon(have.rarity):souvenirIcon(rarity)}
+        ${have?souvenirIconByName(nm,have.rarity):souvenirIconByName(nm,rarity)}
         <div class="nm">${have?esc(nm):'？？？'}</div>
         <div class="sc">${s.name}</div>
       </div>`;
