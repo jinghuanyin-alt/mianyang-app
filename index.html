@@ -597,6 +597,10 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
 .pc-letter{padding:10px 12px 4px;font-size:13px;line-height:1.55;color:var(--ink);
   background:linear-gradient(0deg,var(--green-soft),transparent 70%);font-style:italic}
 .pc-cap{padding:8px 10px;font-size:12px;display:flex;justify-content:space-between;align-items:center}
+.pc-cap-r{display:flex;align-items:center;gap:6px}
+.pc-share{font-size:11px;font-weight:600;border:1px solid var(--line);background:var(--surface);
+  color:var(--ink-2);padding:2px 9px;border-radius:20px;cursor:pointer}
+.pc-share:hover{border-color:var(--brand);color:var(--brand)}
 .rarity{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px}
 .rarity.common{background:var(--line-soft);color:var(--ink-2)}
 .rarity.rare{background:var(--blue-soft);color:var(--blue)}
@@ -3178,6 +3182,17 @@ function renderBag(){
 /* ============================================================
    明信片相册
    ============================================================ */
+function shareCard(id){
+  const c=db.postcards.find(x=>x.id===id);if(!c)return;
+  const sn=SCENE_MAP[c.scene].name;
+  const text=`${c.text} —— 来自绵羊清单，${sn}的小日子`;
+  if(navigator.share){
+    navigator.share({title:'绵羊清单 · 明信片',text}).catch(()=>{});
+  }else if(navigator.clipboard){
+    navigator.clipboard.writeText(text);
+    toast('明信片文案已复制，去分享给朋友吧');
+  }else toast('长按明信片图片保存，再分享给朋友');
+}
 function renderAlbum(){
   travelTick();
   const cards=db.postcards.slice().sort((a,b)=>b.date.localeCompare(a.date));
@@ -3197,7 +3212,10 @@ function renderAlbum(){
         <div class="pc-letter">${esc(x.text)}</div>
         <div class="pc-cap">
           <span>${SCENE_MAP[x.scene].name}${x.with?' · 和'+esc(x.with):''}${x.final?' · 归来合影':''}</span>
-          <span class="rarity ${x.rarity}">${RARITY_LABEL[x.rarity]}</span>
+          <span class="pc-cap-r">
+            <span class="rarity ${x.rarity}">${RARITY_LABEL[x.rarity]}</span>
+            <button class="pc-share" onclick="shareCard('${x.id}')">分享</button>
+          </span>
         </div>
       </div>`).join('')}</div>`;
   }else{
