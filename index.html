@@ -491,6 +491,7 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
   box-shadow:0 0 24px 6px rgba(255,245,200,.35);z-index:2}
 .night-moon::before{content:"";position:absolute;top:9px;left:7px;width:7px;height:7px;border-radius:50%;
   background:rgba(200,185,140,.35);box-shadow:13px 11px 0 2px rgba(200,185,140,.3)}
+.night-moon.dim{opacity:.55}
 .night-star{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;z-index:2;
   box-shadow:0 0 5px 1px rgba(255,255,255,.7);animation:starTwinkle ease-in-out infinite}
 @keyframes starTwinkle{0%,100%{opacity:.25;transform:scale(.7)}50%{opacity:1;transform:scale(1.2)}}
@@ -501,6 +502,23 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
 .evening-sun{position:absolute;top:44px;right:52px;width:50px;height:50px;border-radius:50%;
   background:radial-gradient(circle,#FFE8A8,#F5A85A);
   box-shadow:0 0 36px 14px rgba(245,170,90,.5);z-index:2}
+/* 天气 */
+.yard-w-rain{background:linear-gradient(180deg,#7C8A96 0%,#9AA6AE 50%,#A8B2B4 100%);border-color:#909AA4}
+.yard-w-rain .yard-cloud{opacity:.25}
+.yard-w-rain .yard-ground{background:linear-gradient(180deg,#8A9684,#7C8876)}
+.yard-w-rain .yard-hill::before{background:#8C998A}.yard-w-rain .yard-hill::after{background:#828F80}
+.yard-w-rain .yard-hill-far::before{background:#96A294}.yard-w-rain .yard-hill-far::after{background:#8E9A8C}
+.rain-cloud{position:absolute;background:#BCC4CB;border-radius:50%;z-index:2;opacity:.9}
+.rain-cloud.rc1{top:26px;left:18%;width:70px;height:28px}
+.rain-cloud.rc2{top:18px;left:46%;width:86px;height:32px}
+.rain-cloud.rc3{top:34px;left:30%;width:66px;height:26px}
+.rain-drop{position:absolute;top:-10px;width:2px;height:14px;background:linear-gradient(180deg,rgba(180,205,225,0),#9FC3D8);
+  z-index:3;animation:rainFall linear infinite}
+@keyframes rainFall{0%{transform:translateY(0)}100%{transform:translateY(380px)}}
+.snow-flake{position:absolute;top:-12px;background:#fff;border-radius:50%;z-index:3;opacity:.92;
+  animation:seasonFall linear infinite}
+.yard-w-cloudy .yard-cloud{opacity:.95}
+.yard-w-cloudy{background:linear-gradient(180deg,#B8C2C0 0%,#D4DAD2 50%,#DCE0D8 100%);border-color:#C2CAC4}
 /* ===== 访客 ===== */
 .yard-visitor{position:absolute;bottom:6%;right:7%;width:108px;z-index:3}
 .visitor-svg{width:100%;height:auto;display:block;animation:visitorBreathe 2.6s ease-in-out infinite;transform-origin:bottom center}
@@ -2832,24 +2850,63 @@ function dayPhase(){
   if(h>=17&&h<19)return 'evening';
   return 'night';
 }
+function daySeed(){
+  const d=todayStr().replace(/-/g,'');
+  let h=7;
+  for(const c of d)h=(h*31+Number(c))>>>0;
+  return h;
+}
+function weather(){
+  const s=season();
+  const r=(daySeed()%100)/100;
+  if(s==='winter'&&r<0.45)return 'snow';
+  if(r<0.55)return 'sunny';
+  if(r<0.8)return 'cloudy';
+  return 'rain';
+}
+const WEATHER_LABEL={sunny:'晴',cloudy:'多云',rain:'小雨',snow:'雪'};
+function weatherDecorHTML(){
+  const w=weather();
+  if(w==='rain'){
+    let drops='';
+    for(let i=0;i<26;i++){
+      const left=Math.random()*100,dur=0.6+Math.random()*0.5,delay=Math.random()*1.4;
+      drops+=`<span class="rain-drop" style="left:${left}%;animation-duration:${dur}s;animation-delay:${delay}s"></span>`;
+    }
+    return `<div class="rain-cloud rc1"></div><div class="rain-cloud rc2"></div>${drops}`;
+  }
+  if(w==='cloudy')return `<div class="rain-cloud rc1"></div><div class="rain-cloud rc2"></div><div class="rain-cloud rc3"></div>`;
+  if(w==='snow'){
+    let flakes='';
+    for(let i=0;i<22;i++){
+      const left=Math.random()*100,dur=5+Math.random()*6,delay=-Math.random()*10,size=5+Math.random()*5;
+      flakes+=`<span class="snow-flake" style="left:${left}%;width:${size}px;height:${size}px;animation-duration:${dur}s;animation-delay:${delay}s"></span>`;
+    }
+    return flakes;
+  }
+  return '';
+}
 function nightDecorHTML(){
-  const ph=dayPhase();
+  const ph=dayPhase(),w=weather();
   if(ph==='night'){
+    if(w==='rain')return '';
     let stars='';
-    for(let i=0;i<16;i++){
+    const nStar=w==='cloudy'?7:16;
+    for(let i=0;i<nStar;i++){
       const left=4+Math.random()*92,top=4+Math.random()*34;
       const dur=1.6+Math.random()*2,delay=Math.random()*3;
       stars+=`<span class="night-star" style="left:${left}%;top:${top}%;animation-duration:${dur}s;animation-delay:${delay}s"></span>`;
     }
-    return `<div class="night-moon"></div>${stars}`;
+    return `<div class="night-moon ${w==='cloudy'?'dim':''}"></div>${stars}`;
   }
-  if(ph==='evening')return `<div class="evening-sun"></div>`;
+  if(ph==='evening'&&w==='sunny')return `<div class="evening-sun"></div>`;
   return '';
 }
 function seasonDecorHTML(){
   const s=season();
   const cls=s==='autumn'?'leaf-drop':s==='winter'?'snow-drop':s==='spring'?'petal-drop':'';
   if(!cls)return '';
+  if(s==='winter'&&weather()==='snow')return '';
   const n=s==='winter'?11:8;
   let out='';
   for(let i=0;i<n;i++){
@@ -2969,7 +3026,7 @@ function renderYard(){
            <div style="margin-top:8px"><button class="btn btn-primary" onclick="location.hash='#/shop'">去商店买便当</button>
            <button class="btn btn-ghost" onclick="location.hash='#/bag'">收拾行囊</button></div>`}</div>`;
     }
-    body=`<div class="yard yard-season-${season()} yard-${dayPhase()}">
+    body=`<div class="yard yard-season-${season()} yard-${dayPhase()} yard-w-${weather()}">
       <div class="yard-topbar">
         <span class="yard-coin">${COIN_ICON}${db.coins}</span>
         <div class="yard-actions">
@@ -2979,6 +3036,7 @@ function renderYard(){
       </div>
       <div class="yard-cloud c1"></div><div class="yard-cloud c2"></div>
       ${nightDecorHTML()}
+      ${weatherDecorHTML()}
       ${seasonDecorHTML()}
       <div class="yard-hill-far"></div>
       <div class="yard-hill"></div>
