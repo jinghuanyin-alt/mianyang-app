@@ -479,6 +479,28 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
 .leaf-drop{width:9px;height:8px;background:#D98A3C;border-radius:0 70% 0 70%}
 .snow-drop{width:7px;height:7px;background:#fff;border-radius:50%}
 .petal-drop{width:8px;height:8px;background:#F6C0D8;border-radius:60% 0 60% 0}
+/* 昼夜 */
+.yard-night{background:linear-gradient(180deg,#1B2640 0%,#2E3C5E 50%,#3A4668 100%);border-color:#2E3C5E}
+.yard-night .yard-ground{background:linear-gradient(180deg,#3E4B66,#343F58)}
+.yard-night .yard-hill::before{background:#3A4763}.yard-night .yard-hill::after{background:#333F5A}
+.yard-night .yard-hill-far::before{background:#42506E}.yard-night .yard-hill-far::after{background:#3C4966}
+.yard-night .yard-cloud{opacity:.18}
+.yard-night .yard-act-bubble{background:rgba(255,255,255,.92)}
+.night-moon{position:absolute;top:30px;right:46px;width:42px;height:42px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#FFFBE6,#F0E4B8);
+  box-shadow:0 0 24px 6px rgba(255,245,200,.35);z-index:2}
+.night-moon::before{content:"";position:absolute;top:9px;left:7px;width:7px;height:7px;border-radius:50%;
+  background:rgba(200,185,140,.35);box-shadow:13px 11px 0 2px rgba(200,185,140,.3)}
+.night-star{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;z-index:2;
+  box-shadow:0 0 5px 1px rgba(255,255,255,.7);animation:starTwinkle ease-in-out infinite}
+@keyframes starTwinkle{0%,100%{opacity:.25;transform:scale(.7)}50%{opacity:1;transform:scale(1.2)}}
+.yard-evening{background:linear-gradient(180deg,#E8906A 0%,#F4B87F 46%,#E8C79A 100%);border-color:#E0A878}
+.yard-evening .yard-ground{background:linear-gradient(180deg,#C9A06A,#B88F5A)}
+.yard-evening .yard-hill::before{background:#C9A878}.yard-evening .yard-hill::after{background:#BE9C66}
+.yard-evening .yard-hill-far::before{background:#D8BA8E}.yard-evening .yard-hill-far::after{background:#D0B284}
+.evening-sun{position:absolute;top:44px;right:52px;width:50px;height:50px;border-radius:50%;
+  background:radial-gradient(circle,#FFE8A8,#F5A85A);
+  box-shadow:0 0 36px 14px rgba(245,170,90,.5);z-index:2}
 /* ===== 访客 ===== */
 .yard-visitor{position:absolute;bottom:6%;right:7%;width:108px;z-index:3}
 .visitor-svg{width:100%;height:auto;display:block;animation:visitorBreathe 2.6s ease-in-out infinite;transform-origin:bottom center}
@@ -2804,6 +2826,26 @@ function season(){
   return 'winter';
 }
 const SEASON_LABEL={spring:'春',summer:'夏',autumn:'秋',winter:'冬'};
+function dayPhase(){
+  const h=new Date().getHours();
+  if(h>=6&&h<17)return 'day';
+  if(h>=17&&h<19)return 'evening';
+  return 'night';
+}
+function nightDecorHTML(){
+  const ph=dayPhase();
+  if(ph==='night'){
+    let stars='';
+    for(let i=0;i<16;i++){
+      const left=4+Math.random()*92,top=4+Math.random()*34;
+      const dur=1.6+Math.random()*2,delay=Math.random()*3;
+      stars+=`<span class="night-star" style="left:${left}%;top:${top}%;animation-duration:${dur}s;animation-delay:${delay}s"></span>`;
+    }
+    return `<div class="night-moon"></div>${stars}`;
+  }
+  if(ph==='evening')return `<div class="evening-sun"></div>`;
+  return '';
+}
 function seasonDecorHTML(){
   const s=season();
   const cls=s==='autumn'?'leaf-drop':s==='winter'?'snow-drop':s==='spring'?'petal-drop':'';
@@ -2927,7 +2969,7 @@ function renderYard(){
            <div style="margin-top:8px"><button class="btn btn-primary" onclick="location.hash='#/shop'">去商店买便当</button>
            <button class="btn btn-ghost" onclick="location.hash='#/bag'">收拾行囊</button></div>`}</div>`;
     }
-    body=`<div class="yard yard-season-${season()}">
+    body=`<div class="yard yard-season-${season()} yard-${dayPhase()}">
       <div class="yard-topbar">
         <span class="yard-coin">${COIN_ICON}${db.coins}</span>
         <div class="yard-actions">
@@ -2936,6 +2978,7 @@ function renderYard(){
         </div>
       </div>
       <div class="yard-cloud c1"></div><div class="yard-cloud c2"></div>
+      ${nightDecorHTML()}
       ${seasonDecorHTML()}
       <div class="yard-hill-far"></div>
       <div class="yard-hill"></div>
