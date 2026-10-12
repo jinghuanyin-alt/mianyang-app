@@ -442,6 +442,41 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
 .yard-act-bubble::after{content:'';position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);
   border:5px solid transparent;border-top-color:rgba(255,255,255,.93);border-bottom:none}
 
+/* ===== 四季 ===== */
+.yard-season-autumn .yard-ground{background:linear-gradient(180deg,#D9B56B,#C99E54)}
+.yard-season-autumn .yard-hill::before{background:#D9BE78}
+.yard-season-autumn .yard-hill::after{background:#CDB066}
+.yard-season-autumn{background:linear-gradient(180deg,#C9D2C8 0%,#EEE2C0 48%,#E6D2A0 100%);border-color:#D9C99A}
+.yard-season-winter .yard-ground{background:linear-gradient(180deg,#F2F6F8,#DCE7EE)}
+.yard-season-winter .yard-hill::before{background:#EAF0F4}
+.yard-season-winter .yard-hill::after{background:#DDE8EF}
+.yard-season-winter{background:linear-gradient(180deg,#C7D6E0 0%,#E4EDF2 48%,#EAF1F5 100%);border-color:#CFDEE8}
+.yard-season-spring .yard-ground{background:linear-gradient(180deg,#93C68A,#73AE6C)}
+.season-drop{position:absolute;top:-12px;z-index:2;opacity:.9;animation:seasonFall linear infinite}
+@keyframes seasonFall{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(380px) rotate(340deg)}}
+.leaf-drop{width:9px;height:8px;background:#D98A3C;border-radius:0 70% 0 70%}
+.snow-drop{width:7px;height:7px;background:#fff;border-radius:50%}
+.petal-drop{width:8px;height:8px;background:#F6C0D8;border-radius:60% 0 60% 0}
+/* ===== 访客 ===== */
+.yard-visitor{position:absolute;bottom:6%;right:7%;width:108px;z-index:3}
+.visitor-svg{width:100%;height:auto;display:block;animation:visitorBreathe 2.6s ease-in-out infinite;transform-origin:bottom center}
+@keyframes visitorBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+.visitor-bubble{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:4px;
+  background:rgba(255,255,255,.94);border-radius:13px;padding:3px 10px;font-size:11px;
+  font-weight:600;color:var(--ink);white-space:nowrap;max-width:150px;overflow:hidden;text-overflow:ellipsis;
+  box-shadow:0 2px 6px rgba(0,0,0,.1)}
+.visitor-bubble::after{content:'';position:absolute;top:-4px;left:50%;transform:translateX(-50%);
+  border:4px solid transparent;border-bottom-color:rgba(255,255,255,.94);border-top:none}
+.visitor-panel{margin-top:12px;background:var(--green-soft);border:1px solid #BFE0C4;
+  border-radius:14px;padding:12px 14px;font-size:13px}
+.visitor-panel b{color:var(--green)}
+.visitor-foods{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.visitor-foods button{background:#fff;border:1px solid var(--line);border-radius:20px;
+  padding:6px 13px;font-size:13px;font-weight:600;color:var(--ink)}
+.visitor-foods button.liked{border-color:var(--green);color:var(--green)}
+.visitor-foods button:hover{background:var(--line-soft)}
+.visitor-panel .vp-foot{font-size:12px;color:var(--ink-2);margin-top:4px}
+
 /* ===== 商店 ===== */
 .shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px}
 .shop-item{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px}
@@ -1924,6 +1959,67 @@ function sheepSVG(pose,opts){
 function ownedCos(){
   return {hat:(db.inventory['cos_hat']||0)>0,bow:(db.inventory['cos_bow']||0)>0};
 }
+
+/* ---------- 访客（小动物朋友） ---------- */
+const VISITORS=[
+  {id:'rabbit',name:'小兔子',likes:['樱花饼','桂花糖片','烤红薯'],greet:'你好呀，我肚子有点饿了'},
+  {id:'hedgehog',name:'小刺猬',likes:['野莓酱','松果','森林菌菇'],greet:'路过这里，想吃点甜甜的'},
+  {id:'squirrel',name:'小松鼠',likes:['松果','山核桃','椰枣'],greet:'我闻到了坚果的香味'},
+  {id:'turtle',name:'小乌龟',likes:['小贝壳','莲子','温泉馒头'],greet:'慢慢爬到这里，有点饿啦'}
+];
+const VISITOR_MAP={};VISITORS.forEach(v=>VISITOR_MAP[v.id]=v);
+function visitorSVG(id){
+  const dark='#3A332E';
+  if(id==='rabbit')return `<svg viewBox="0 0 200 180" class="visitor-svg">
+    <ellipse cx="78" cy="52" rx="13" ry="35" fill="#F5F0EC" transform="rotate(-8 78 52)"/>
+    <ellipse cx="122" cy="52" rx="13" ry="35" fill="#F5F0EC" transform="rotate(8 122 52)"/>
+    <ellipse cx="78" cy="54" rx="6" ry="23" fill="#F6C8D0" transform="rotate(-8 78 54)"/>
+    <ellipse cx="122" cy="54" rx="6" ry="23" fill="#F6C8D0" transform="rotate(8 122 54)"/>
+    <ellipse cx="100" cy="132" rx="46" ry="40" fill="#F5F0EC"/>
+    <ellipse cx="100" cy="100" rx="42" ry="38" fill="#F5F0EC"/>
+    <circle cx="84" cy="98" r="5" fill="${dark}"/><circle cx="116" cy="98" r="5" fill="${dark}"/>
+    <path d="M97 110 l6 0 l-3 4 z" fill="#F4A8B8"/>
+    <ellipse cx="76" cy="112" rx="7" ry="4" fill="#F6C8D0" opacity=".7"/>
+    <ellipse cx="124" cy="112" rx="7" ry="4" fill="#F6C8D0" opacity=".7"/>
+    <ellipse cx="82" cy="168" rx="12" ry="7" fill="#EAE3DC"/>
+    <ellipse cx="118" cy="168" rx="12" ry="7" fill="#EAE3DC"/>
+  </svg>`;
+  if(id==='hedgehog')return `<svg viewBox="0 0 200 180" class="visitor-svg">
+    <path d="M40 132 Q40 58 100 58 Q160 58 160 132 Z" fill="#9C6B4A"/>
+    <g fill="#7A4E34">
+      <path d="M58 80 l-5 -17 l14 7 z"/><path d="M82 66 l-2 -18 l12 9 z"/>
+      <path d="M110 66 l4 -18 l10 10 z"/><path d="M136 80 l8 -16 l-1 18 z"/>
+    </g>
+    <ellipse cx="100" cy="120" rx="38" ry="30" fill="#E8C9A8"/>
+    <circle cx="88" cy="114" r="4.5" fill="${dark}"/><circle cx="112" cy="114" r="4.5" fill="${dark}"/>
+    <ellipse cx="100" cy="130" rx="5" ry="4" fill="${dark}"/>
+    <ellipse cx="80" cy="162" rx="9" ry="5" fill="#6B4530"/>
+    <ellipse cx="120" cy="162" rx="9" ry="5" fill="#6B4530"/>
+  </svg>`;
+  if(id==='squirrel')return `<svg viewBox="0 0 200 180" class="visitor-svg">
+    <path d="M140 132 Q188 122 176 68 Q170 42 148 50 Q166 82 144 106 Z" fill="#B07A4E"/>
+    <ellipse cx="94" cy="126" rx="40" ry="42" fill="#C48A58"/>
+    <ellipse cx="94" cy="90" rx="38" ry="35" fill="#C48A58"/>
+    <path d="M68 64 l-4 -18 l18 8 z" fill="#B07A4E"/>
+    <path d="M120 64 l4 -18 l-18 8 z" fill="#B07A4E"/>
+    <circle cx="82" cy="88" r="5" fill="${dark}"/><circle cx="106" cy="88" r="5" fill="${dark}"/>
+    <ellipse cx="94" cy="101" rx="3.5" ry="3" fill="${dark}"/>
+    <ellipse cx="82" cy="100" rx="8" ry="6" fill="#EAD3B8" opacity=".85"/>
+    <ellipse cx="106" cy="100" rx="8" ry="6" fill="#EAD3B8" opacity=".85"/>
+    <ellipse cx="80" cy="164" rx="11" ry="6" fill="#A9713F"/>
+    <ellipse cx="108" cy="164" rx="11" ry="6" fill="#A9713F"/>
+  </svg>`;
+  return `<svg viewBox="0 0 200 180" class="visitor-svg">
+    <ellipse cx="58" cy="142" rx="11" ry="7" fill="#7BA86B"/>
+    <ellipse cx="142" cy="142" rx="11" ry="7" fill="#7BA86B"/>
+    <ellipse cx="100" cy="120" rx="55" ry="42" fill="#7BA86B"/>
+    <ellipse cx="100" cy="118" rx="45" ry="34" fill="#9CC68B"/>
+    <path d="M100 85 v65 M66 101 h68 M72 132 h56" stroke="#6B945C" stroke-width="3" fill="none"/>
+    <ellipse cx="100" cy="70" rx="22" ry="20" fill="#8BBE78"/>
+    <circle cx="92" cy="66" r="4" fill="${dark}"/><circle cx="108" cy="66" r="4" fill="${dark}"/>
+    <path d="M94 76 q6 5 12 0" stroke="${dark}" stroke-width="2" fill="none"/>
+  </svg>`;
+}
 function awardCoins(reason,show){
   const n=AWARD_RULE[reason]||0;
   if(!n)return;
@@ -2172,6 +2268,51 @@ function travelTick(){
   return changed;
 }
 function welcomeHome(){db.pet.state='home';db.pet.travelLuck=0;save();render();}
+
+/* ---------- 访客出现与招待 ---------- */
+function visitorTick(){
+  if(db.pet.state!=='home'){
+    if(db.visitor)db.visitor=null; // 主人不在，访客也不在
+    return;
+  }
+  const last=db.lastVisitor||0;
+  if(!db.visitor&&db.souvenirs.length>0){
+    if(Date.now()-last>40*60000&&Math.random()<0.45)spawnVisitor();
+  }
+  if(db.visitor&&Date.now()-db.visitor.since>35*60000){
+    db.visitor=null; // 等太久自己走了
+  }
+}
+function spawnVisitor(){
+  const id=VISITORS[Math.floor(Math.random()*VISITORS.length)].id;
+  db.visitor={id,since:Date.now()};
+  db.lastVisitor=Date.now();
+  save();
+}
+function dismissVisitor(){
+  db.lastVisitor=Date.now();
+  db.visitor=null;save();render();
+}
+function feedVisitor(sovId){
+  if(!db.visitor)return;
+  const idx=db.souvenirs.findIndex(s=>s.id===sovId);
+  if(idx<0)return;
+  const v=VISITOR_MAP[db.visitor.id];
+  const sov=db.souvenirs[idx];
+  const liked=v.likes.includes(sov.name);
+  const reward=liked?36:18;
+  let clover=false;
+  db.coins+=reward;
+  db.souvenirs.splice(idx,1);
+  if(liked&&Math.random()<0.4){
+    db.inventory.charm_clover=(db.inventory.charm_clover||0)+1;clover=true;
+  }
+  db.lastVisitor=Date.now();
+  db.visitor=null;
+  save();coinFly(reward);
+  toast(clover?v.name+'很开心，回赠草叶和四叶草':v.name+'吃饱了，回赠 '+reward+' 草叶');
+  render();
+}
 function travelProgress(){
   const p=db.pet;
   if(p.state!=='away')return 0;
@@ -2268,17 +2409,50 @@ function gardenHTML(){
 const COIN_ICON='<svg viewBox="0 0 24 24" width="17" height="17" style="vertical-align:-3px"><path d="M12 21 v-10 M12 11 C12 6 8 4 4 5 c0 5 3 8 8 6z M12 8 c0 -4 4 -6 8 -5 0 5 -3 7 -8 6z" fill="#5B9E5B"/></svg>';
 const HOME_SVG='<svg viewBox="0 0 80 62"><rect x="14" y="28" width="52" height="34" fill="#F0E4D2"/><path d="M8 30 L40 6 L72 30 Z" fill="#D18E5A"/><rect x="34" y="42" width="14" height="20" fill="#B5835A"/><rect x="20" y="36" width="10" height="10" fill="#BBD8E4"/></svg>';
 const FENCE_SVG='<svg viewBox="0 0 90 34" preserveAspectRatio="none"><path d="M6 6 v26 M24 6 v26 M42 6 v26 M60 6 v26 M78 6 v26 M4 14 h82 M4 26 h82" stroke="#A9784E" stroke-width="4" stroke-linecap="round"/></svg>';
+function season(){
+  const m=new Date().getMonth()+1;
+  if(m>=3&&m<=5)return 'spring';
+  if(m>=6&&m<=8)return 'summer';
+  if(m>=9&&m<=11)return 'autumn';
+  return 'winter';
+}
+const SEASON_LABEL={spring:'春',summer:'夏',autumn:'秋',winter:'冬'};
+function seasonDecorHTML(){
+  const s=season();
+  const cls=s==='autumn'?'leaf-drop':s==='winter'?'snow-drop':s==='spring'?'petal-drop':'';
+  if(!cls)return '';
+  const n=s==='winter'?11:8;
+  let out='';
+  for(let i=0;i<n;i++){
+    const left=4+Math.random()*92;
+    const dur=7+Math.random()*7;
+    const delay=-Math.random()*12;
+    out+=`<span class="season-drop ${cls}" style="left:${left}%;animation-duration:${dur}s;animation-delay:${delay}s"></span>`;
+  }
+  return out;
+}
 
 function yardEntries(){
   return [
     ['#/shop','商店',itemIcon('food_scone')],
     ['#/bag','行囊',itemIcon('gear_tent')],
-    ['#/album','明信片',itemIcon('gear_camera')],
-    ['#/book','图鉴',itemIcon('gear_lantern')]
+    ['#/album','明信片',itemIcon('gear_camera')],    ['#/book','图鉴',itemIcon('gear_lantern')]
   ].map(e=>`<button class="yard-entry" onclick="location.hash='${e[0]}'">${e[2]}${e[1]}</button>`).join('');
 }
+function visitorPanelHTML(){
+  if(!db.visitor)return '';
+  const v=VISITOR_MAP[db.visitor.id];
+  return `<div class="visitor-panel">
+    <b>${v.name}来做客啦</b>
+    <div style="margin-top:3px">它有点饿，用你带回来的特产招待它吧。它最喜欢 ${v.likes.join('、')}，给喜欢的会回赠更多。</div>
+    <div class="visitor-foods">
+      ${db.souvenirs.map(s=>`<button class="${v.likes.includes(s.name)?'liked':''}" onclick="feedVisitor('${s.id}')">${s.name}${v.likes.includes(s.name)?' · 喜欢':''}</button>`).join('')}
+    </div>
+    <div class="vp-foot">不想招待的话，它也会自己离开 <button class="btn btn-ghost" style="padding:2px 9px;font-size:12px" onclick="dismissVisitor()">送走</button></div>
+  </div>`;
+}
 function renderYard(){
-  travelTick();
+  travelTick();visitorTick();
   const p=db.pet,cos=ownedCos();
   const head=`<div class="page-head"><div class="page-title">小院子</div>
     <div class="page-sub">${esc(p.name)} · 明信片 ${db.postcards.length} 张 · 特产 ${db.souvenirs.length} 种</div></div>`;
@@ -2325,7 +2499,7 @@ function renderYard(){
            <div style="margin-top:8px"><button class="btn btn-primary" onclick="location.hash='#/shop'">去商店买便当</button>
            <button class="btn btn-ghost" onclick="location.hash='#/bag'">收拾行囊</button></div>`}</div>`;
     }
-    body=`<div class="yard">
+    body=`<div class="yard yard-season-${season()}">
       <div class="yard-topbar">
         <span class="yard-coin">${COIN_ICON}${db.coins}</span>
         <div class="yard-actions">
@@ -2334,6 +2508,7 @@ function renderYard(){
         </div>
       </div>
       <div class="yard-cloud c1"></div><div class="yard-cloud c2"></div>
+      ${seasonDecorHTML()}
       <div class="yard-hill"></div>
       <div class="yard-home" style="line-height:0">${HOME_SVG}</div>
       <div class="yard-fence" style="line-height:0">${FENCE_SVG}</div>
@@ -2341,7 +2516,12 @@ function renderYard(){
       ${gardenHTML()}
       ${p.state==='home'?`<div class="yard-act-bubble">${HOME_ACTIVITIES[p.homeAct||'idle'].label} · ${HOME_ACTIVITIES[p.homeAct||'idle'].desc}</div>`:''}
       <div class="yard-sheep">${sheepSVG(p.state==='back'?'pack':(p.homeAct||'idle'),{hat:cos.hat,bow:cos.bow,bag:p.state==='back'})}</div>
+      ${db.visitor?`<div class="yard-visitor">
+        <div class="visitor-bubble">${VISITOR_MAP[db.visitor.id].greet}</div>
+        ${visitorSVG(db.visitor.id)}
+      </div>`:''}
     </div>
+    ${visitorPanelHTML()}
     ${msg}
     <div class="yard-entries">${yardEntries()}</div>`;
   }
