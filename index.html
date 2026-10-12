@@ -533,6 +533,17 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
 .lv-track i{display:block;height:100%;background:linear-gradient(90deg,#7CC87C,#5BA85B);border-radius:4px;transition:width .5s}
 .lv-num{font-size:11px;color:var(--ink-2);flex-shrink:0}
 
+/* ===== 桌子 ===== */
+.desk-section{margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px}
+.desk-section h4{font-size:15px;margin-bottom:12px}
+.desk-section h4 span{font-size:12px;color:var(--ink-2);font-weight:400}
+.desk-slots{display:flex;gap:12px}
+.desk-slot{width:64px;height:64px;border-radius:12px;display:flex;align-items:center;justify-content:center}
+.desk-slot.filled{background:var(--green-soft);cursor:pointer;transition:transform .15s}
+.desk-slot.filled:hover{transform:scale(1.05)}
+.desk-slot.filled svg{width:46px;height:46px}
+.desk-slot.empty{background:var(--bg);border:2px dashed var(--line);color:var(--ink-2)}
+
 /* ===== 商店 ===== */
 .shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px}
 .shop-item{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px}
@@ -708,6 +719,7 @@ const DEFAULT_DATA={
   souvenirs:[],
   stats:{trips:0,visitors:0,harvests:0},
   achievements:{},
+  desk:[],
   updatedAt:null
 };
 /* ---------- 云同步（GitHub Gist，私密、自动双向） ---------- */
@@ -816,6 +828,9 @@ function migrate(d){
   d.inventory=d.inventory||{};
   d.postcards=Array.isArray(d.postcards)?d.postcards:[];
   d.souvenirs=Array.isArray(d.souvenirs)?d.souvenirs:[];
+  d.desk=Array.isArray(d.desk)?d.desk:[];
+  d.stats=d.stats||{trips:0,visitors:0,harvests:0};
+  d.achievements=d.achievements||{};
   return d;
 }
 function load(){
@@ -2309,6 +2324,20 @@ function removeFromBag(itemId){
   db.inventory[itemId]=(db.inventory[itemId]||0)+1;
   save();renderBag();
 }
+function addToDesk(itemId){
+  if((db.inventory[itemId]||0)<=0){toast('你还没有这个物品');return;}
+  if(db.desk.length>=4){toast('桌子上只能放 4 个');return;}
+  db.inventory[itemId]--;
+  if(db.inventory[itemId]<=0)delete db.inventory[itemId];
+  db.desk.push(itemId);
+  save();renderBag();
+}
+function takeFromDesk(i){
+  const id=db.desk[i];if(!id)return;
+  db.desk.splice(i,1);
+  db.inventory[id]=(db.inventory[id]||0)+1;
+  save();renderBag();
+}
 function sendOff(){
   const food=bagFood();
   if(!food){toast('要给它准备一个便当，它才有力气出门');return;}
@@ -2334,6 +2363,34 @@ function sendOff(){
   toast('它背上包出发啦，等它的消息吧');
   checkAchievements();
   setTimeout(()=>location.hash='#/yard',400);
+}
+/* 小羊自己看桌子，拿备用便当再次出门 */
+function autoTick(){
+  const p=db.pet;
+  if(p.state!=='home'||!p.autoLeaveAt)return;
+  if(Date.now()<p.autoLeaveAt)return;
+  const foodIdx=db.desk.findIndex(id=>ITEM_MAP[id]&&ITEM_MAP[id].cat==='food');
+  if(foodIdx<0){p.autoLeaveAt=null;save();return;}
+  autoSendOff();
+}
+function autoSendOff(){
+  const items=db.desk.slice();
+  const foodId=items.find(id=>ITEM_MAP[id].cat==='food');
+  const food=ITEM_MAP[foodId];
+  db.desk=[];
+  const gear=items.filter(id=>id!==foodId);
+  let luck=0;
+  gear.forEach(id=>{if(ITEM_MAP[id].cat==='charm')luck+=ITEM_MAP[id].luck;});
+  const dest=pickDestination();
+  const now=Date.now();
+  const durMs=food.dur*3600000*(0.85+Math.random()*0.4);
+  Object.assign(db.pet,{state:'away',travelId:uid(),travelStart:new Date(now).toISOString(),
+    travelEnd:new Date(now+durMs).toISOString(),destination:dest,travelLuck:luck,bag:[],
+    pendingMail:[]});
+  db.stats.trips=(db.stats.trips||0)+1;
+  db.pet.autoLeaveAt=null;
+  save();
+  toast('它自己看了看桌子，背上包又出门啦');
 }
 function travelTick(){
   const p=db.pet;if(p.state!=='away')return false;
@@ -2366,7 +2423,15 @@ function travelTick(){
   if(changed)save();
   return changed;
 }
-function welcomeHome(){db.pet.state='home';db.pet.travelLuck=0;save();gainExp(40);checkAchievements();render();}
+function welcomeHome(){
+  const p=db.pet;
+  p.state='home';p.travelLuck=0;
+  // 桌上有便当 → 它歇一会儿后会自己再出门
+  if(Array.isArray(db.desk)&&db.desk.some(id=>ITEM_MAP[id]&&ITEM_MAP[id].cat==='food')){
+    p.autoLeaveAt=Date.now()+(20+Math.random()*25)*60000;
+  }
+  save();gainExp(40);checkAchievements();render();
+}
 
 /* ---------- 访客出现与招待 ---------- */
 function visitorTick(){
@@ -2574,7 +2639,7 @@ function levelBarHTML(){
   </div>`;
 }
 function renderYard(){
-  travelTick();visitorTick();
+  travelTick();visitorTick();autoTick();
   const p=db.pet,cos=ownedCos();
   const head=`<div class="page-head"><div class="page-title">小院子</div>
     <div class="page-sub">${esc(p.name)} · 明信片 ${db.postcards.length} 张 · 特产 ${db.souvenirs.length} 种</div></div>`;
@@ -2890,9 +2955,22 @@ function renderBag(){
             <div style="font-size:13px;font-weight:600">${esc(it.name)}
               <span class="n" style="font-weight:400">×${db.inventory[id]}</span></div>
             ${isCos?'<span style="font-size:12px;color:var(--green)">已穿上</span>'
-              :`<button class="btn btn-primary" style="font-size:12px;padding:5px 12px" onclick="addToBag('${id}')">放入</button>`}
+              :`<div style="display:flex;gap:5px">
+                <button class="btn btn-primary" style="font-size:12px;padding:5px 10px" onclick="addToBag('${id}')">行囊</button>
+                <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px" onclick="addToDesk('${id}')">放桌</button>
+              </div>`}
           </div>`;
         }).join(''):'<div class="empty" style="padding:16px;font-size:13px">还没有物品，去商店买吧</div>'}
+      </div>
+    </div>
+    <div class="desk-section">
+      <h4>小屋的桌子 <span>· 放在桌上，它回家歇一会儿后，会自己拿一个再出门</span></h4>
+      <div class="desk-slots">
+        ${[0,1,2,3].map(i=>{
+          const id=db.desk[i];
+          if(id)return `<button class="desk-slot filled" onclick="takeFromDesk(${i})" title="拿回物品箱">${itemIcon(id)}</button>`;
+          return `<div class="desk-slot empty"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>`;
+        }).join('')}
       </div>
     </div>
     <div style="margin-top:16px;display:flex;gap:10px">
@@ -2997,6 +3075,14 @@ setInterval(()=>{
     pickHomeAct();render();
   }
 },15000);
+// 小羊自主拿桌上便当再出发
+setInterval(()=>{
+  if(db.pet.state==='home'&&db.pet.autoLeaveAt){
+    const before=db.pet.state;
+    autoTick();
+    if(before!==db.pet.state)render();
+  }
+},5000);
 </script>
 </body>
 </html>
