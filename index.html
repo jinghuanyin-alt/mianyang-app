@@ -513,6 +513,17 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
 .onboarding-skip{font-size:13px;color:var(--ink-2);cursor:pointer;background:none}
 .onboarding-next{min-width:92px}
 
+/* ===== 成就 ===== */
+.ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.ach-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 12px;
+  text-align:center;transition:transform .2s}
+.ach-card:not(.locked):hover{transform:translateY(-2px)}
+.ach-card.locked{opacity:.62}
+.ach-icon{width:58px;height:58px;margin:0 auto 8px}
+.ach-name{font-size:14px;font-weight:700;margin-bottom:3px}
+.ach-desc{font-size:12px;color:var(--ink-2);line-height:1.5;min-height:36px}
+.ach-date{font-size:11px;color:var(--ink-2);margin-top:6px}
+
 /* ===== 商店 ===== */
 .shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px}
 .shop-item{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px}
@@ -686,6 +697,8 @@ const DEFAULT_DATA={
   inventory:{},
   postcards:[],
   souvenirs:[],
+  stats:{trips:0,visitors:0,harvests:0},
+  achievements:{},
   updatedAt:null
 };
 /* ---------- 云同步（GitHub Gist，私密、自动双向） ---------- */
@@ -891,13 +904,28 @@ function toggleInstance(id,date){
       awardCoins('task');gained=true;}
   }
   save();render();
-  if(gained)coinFly(AWARD_RULE[t.rrule?'repeat':'task']);
+  if(gained){coinFly(AWARD_RULE[t.rrule?'repeat':'task']);checkAchievements();}
 }
 function doneTodayCount(){
   const t=todayStr();
   return db.tasks.filter(x=> x.rrule
     ?x.doneDates.some(d=>d.date===t)
     :x.status==='done'&&x.completed_at&&x.completed_at.slice(0,10)===t).length;
+}
+function totalTasksDone(){
+  return db.tasks.reduce((n,t)=>n+(t.rrule?(t.doneDates||[]).length:(t.status==='done'?1:0)),0);
+}
+function totalPomos(){return db.pomodoros.filter(x=>x.completed===1).length;}
+function visitedScenes(){
+  const s=new Set();
+  db.postcards.forEach(p=>s.add(p.scene));
+  db.souvenirs.forEach(v=>s.add(v.scene));
+  return s.size;
+}
+function maxStreak(){
+  let mx=0;
+  db.habits.forEach(h=>{mx=Math.max(mx,habitStreak(h.id));});
+  return mx;
 }
 function itemsOnDate(date){
   const evs=db.events.filter(e=>e.date===date).map(e=>({kind:'event',list:e.list||'工作',...e}));
@@ -917,7 +945,8 @@ const ICONS={
   trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13"/></svg>',
   stats:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18"/><path d="M6 20v-6"/><path d="M12 20V8"/><path d="M18 20v-9"/></svg>',
   plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
-  yard:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.5-9.5-9C1 9 2.5 5.5 6 5.5c2 0 3.2 1.2 4 2.3.8-1.1 2-2.3 4-2.3 3.5 0 5 3.5 3.5 6.5C19 16.5 12 21 12 21z"/></svg>'
+  yard:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.5-9.5-9C1 9 2.5 5.5 6 5.5c2 0 3.2 1.2 4 2.3.8-1.1 2-2.3 4-2.3 3.5 0 5 3.5 3.5 6.5C19 16.5 12 21 12 21z"/></svg>',
+  ach:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="6"/><path d="M8.5 14 7 22l5-2 5 2-1.5-8"/></svg>'
 };
 
 /* ---------- 路由 ---------- */
@@ -930,6 +959,7 @@ const MAIN_ROUTES=[
 ];
 const SUB_ROUTES=[
   {id:'stats',name:'统计',icon:ICONS.stats},
+  {id:'ach',name:'成就',icon:ICONS.ach},
   {id:'settings',name:'设置',icon:ICONS.settings}
 ];
 const ROUTES=MAIN_ROUTES.concat(SUB_ROUTES).concat([{id:'room',name:'小羊的家'}]);
@@ -1041,6 +1071,7 @@ function completeSession(){
     awardCoins('pomo');
     save();
     coinFly(AWARD_RULE.pomo);
+    checkAchievements();
     notify('专注完成，休息一下吧');
     const next=(timer.cycle%setting('longEvery')===0)?'long':'short';
     timer.mode=next;
@@ -2268,8 +2299,10 @@ function sendOff(){
   if(Math.random()<0.85)mailPts.push(0.3);
   if(food.dur>=3&&Math.random()<0.6)mailPts.push(0.65);
   db.pet.pendingMail=mailPts.map(p=>({at:new Date(now+p*durMs).toISOString(),got:false}));
+  db.stats.trips=(db.stats.trips||0)+1;
   save();
   toast('它背上包出发啦，等它的消息吧');
+  checkAchievements();
   setTimeout(()=>location.hash='#/yard',400);
 }
 function travelTick(){
@@ -2345,9 +2378,11 @@ function feedVisitor(sovId){
   }
   db.lastVisitor=Date.now();
   db.visitor=null;
+  db.stats.visitors=(db.stats.visitors||0)+1;
   save();coinFly(reward);
   toast(clover?v.name+'很开心，回赠草叶和四叶草':v.name+'吃饱了，回赠 '+reward+' 草叶');
   render();
+  checkAchievements();
 }
 function travelProgress(){
   const p=db.pet;
@@ -2409,9 +2444,11 @@ function harvestSlot(i){
     db.inventory.charm_clover=(db.inventory.charm_clover||0)+1;clover=true;
   }
   s.readyAt=Date.now()+GARDEN_MIN*60000;
+  db.stats.harvests=(db.stats.harvests||0)+1;
   save();coinFly(GARDEN_YIELD);
   toast(clover?'收割到 '+GARDEN_YIELD+' 草叶，还长出了四叶草':'收割到 '+GARDEN_YIELD+' 草叶');
   render();
+  checkAchievements();
 }
 function grassTuftSVG(ready){
   if(ready){
@@ -2664,6 +2701,71 @@ function maybeOnboard(){
   }
 }
 
+/* ============================================================
+   成就系统
+   ============================================================ */
+function achBadge(gold){
+  const c=gold?'#E8B84E':'#C8C8C8';
+  const r=gold?'#D19A36':'#B0B0B0';
+  const inner=gold?'#FCE8A8':'#E0E0E0';
+  return `<svg viewBox="0 0 60 60"><path d="M22 40 L18 54 L28 48 Z" fill="${r}"/><path d="M38 40 L42 54 L32 48 Z" fill="${c}"/>
+    <circle cx="30" cy="25" r="19" fill="${c}"/><circle cx="30" cy="25" r="14" fill="${inner}"/>
+    ${gold?'<path d="M22 25 l6 6 l11 -12" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>':'<circle cx="30" cy="25" r="4" fill="#B8B8B8"/>'}
+  </svg>`;
+}
+const ACHIEVEMENTS=[
+  {id:'first_task',name:'第一件小事',desc:'完成第一个任务',check:()=>totalTasksDone()>=1},
+  {id:'first_pomo',name:'第一颗番茄',desc:'完成一次专注番茄',check:()=>totalPomos()>=1},
+  {id:'first_trip',name:'第一次远行',desc:'送小羊出门旅行',check:()=>(db.stats.trips||0)>=1},
+  {id:'first_card',name:'第一张明信片',desc:'收到它寄回的明信片',check:()=>db.postcards.length>=1},
+  {id:'first_visitor',name:'第一位客人',desc:'招待来访的小动物',check:()=>(db.stats.visitors||0)>=1},
+  {id:'first_harvest',name:'第一次收割',desc:'在草叶田亲手收割',check:()=>(db.stats.harvests||0)>=1},
+  {id:'pomo_50',name:'专注达人',desc:'累计完成50个番茄',check:()=>totalPomos()>=50},
+  {id:'task_30',name:'行动派',desc:'累计完成30件任务',check:()=>totalTasksDone()>=30},
+  {id:'trip_10',name:'旅行爱好者',desc:'送小羊旅行10次',check:()=>(db.stats.trips||0)>=10},
+  {id:'sov_10',name:'特产收藏家',desc:'收集10种特产',check:()=>db.souvenirs.length>=10},
+  {id:'card_20',name:'明信片册',desc:'收集20张明信片',check:()=>db.postcards.length>=20},
+  {id:'streak_7',name:'坚持一周',desc:'习惯连续打卡7天',check:()=>maxStreak()>=7},
+  {id:'all_scenes',name:'走遍世界',desc:'到访全部10个地方',check:()=>visitedScenes()>=10},
+  {id:'clover',name:'幸运的你',desc:'拥有一片四叶草',check:()=>(db.inventory.charm_clover||0)>=1},
+  {id:'rich_500',name:'草叶满满',desc:'拥有500草叶',check:()=>db.coins>=500}
+];
+function checkAchievements(){
+  if(!db.stats)db.stats={trips:0,visitors:0,harvests:0};
+  if(!db.achievements)db.achievements={};
+  let newly=[];
+  ACHIEVEMENTS.forEach(a=>{
+    if(!db.achievements[a.id]){
+      try{if(a.check()){db.achievements[a.id]={at:new Date().toISOString()};newly.push(a);}}catch(e){}
+    }
+  });
+  if(newly.length){
+    save();
+    const a=newly[0];
+    toast('解锁成就：'+a.name+'  +20草叶');
+    db.coins+=20;save();
+    setTimeout(()=>coinFly(20),300);
+  }
+}
+function renderAchievements(){
+  const n=Object.keys(db.achievements||{}).length;
+  const head=`<div class="page-head"><div class="page-title">成就</div>
+    <div class="page-sub">已解锁 ${n} / ${ACHIEVEMENTS.length} 个小成就</div></div>`;
+  const grid=`<div class="ach-grid">
+    ${ACHIEVEMENTS.map(a=>{
+      const got=db.achievements[a.id];
+      const ds=got?(()=>{const d=new Date(got.at);return (d.getMonth()+1)+'月'+d.getDate()+'日';})():'';
+      return `<div class="ach-card ${got?'':'locked'}">
+        <div class="ach-icon">${achBadge(!!got)}</div>
+        <div class="ach-name">${a.name}</div>
+        <div class="ach-desc">${a.desc}</div>
+        ${got?`<div class="ach-date">${ds}</div>`:'<div class="ach-date">未解锁</div>'}
+      </div>`;
+    }).join('')}
+  </div>`;
+  $('#page').innerHTML=head+grid;
+}
+
 let shopCat='all';
 const CAT_LABEL={all:'全部',food:'便当',gear:'道具',charm:'护身符',cosmetic:'装扮'};
 function buyItem(itemId){
@@ -2830,7 +2932,7 @@ function renderBook(){
 function render(){
   const view=location.hash.replace('#/','')||'today';
   const map={today:renderToday,calendar:renderCalendar,tasks:renderTasks,habits:renderHabits,stats:renderStats,settings:renderSettings,
-    yard:renderYard,shop:renderShop,bag:renderBag,album:renderAlbum,book:renderBook,room:renderRoom};
+    yard:renderYard,shop:renderShop,bag:renderBag,album:renderAlbum,book:renderBook,room:renderRoom,ach:renderAchievements};
   (map[view]||renderToday)();
   window.scrollTo(0,0);
   const fab=$('#fab');
