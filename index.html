@@ -425,6 +425,10 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
 .yard-bush{position:absolute;bottom:5%;left:20%;width:64px;z-index:3}
 .yard-flower{position:absolute;bottom:3%;right:18%;width:30px;z-index:3}
 .yard-sheep{position:absolute;bottom:8%;left:50%;transform:translateX(-50%);width:150px;z-index:2}
+.pet-heart{position:absolute;z-index:6;font-size:26px;color:#E8849B;pointer-events:none;
+  text-shadow:0 2px 3px rgba(0,0,0,.15);animation:petHeart 1.4s ease-out forwards}
+@keyframes petHeart{0%{opacity:0;transform:translateY(8px) scale(.6)}
+  20%{opacity:1}100%{opacity:0;transform:translateY(-46px) scale(1.15)}}
 .yard-home{position:absolute;bottom:24%;left:7%;width:78px;height:60px;z-index:1;cursor:pointer;transition:transform .2s}
 .yard-home:hover{transform:translateY(-3px)}
 .yard-topbar{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:12px 14px;z-index:5}
@@ -2839,6 +2843,36 @@ function levelBarHTML(){
     <span class="lv-num">${li.cur}/${li.need}</span>
   </div>`;
 }
+let lastPetAt=0;
+function petSheep(){
+  const now=Date.now();
+  if(now-lastPetAt<1800){toast('它正在享受呢');return;}
+  lastPetAt=now;
+  const p=db.pet;
+  const wrap=document.querySelector('.yard-sheep');
+  if(!wrap)return;
+  SFX.harvest();
+  if(p.state==='home'){
+    const cos=ownedCos();
+    wrap.innerHTML=sheepSVG('happy',{hat:cos.hat,bow:cos.bow});
+    setTimeout(()=>{
+      const cur=document.querySelector('.yard-sheep');
+      if(cur&&db.pet.state==='home')cur.innerHTML=sheepSVG(db.pet.homeAct||'idle',{hat:ownedCos().hat,bow:ownedCos().bow});
+    },1600);
+  }
+  floatHeart(wrap);
+}
+function floatHeart(wrap){
+  const sc=document.querySelector('.yard');
+  if(!sc)return;
+  const r=wrap.getBoundingClientRect(),sr=sc.getBoundingClientRect();
+  const h=document.createElement('div');
+  h.className='pet-heart';h.textContent='♥';
+  h.style.left=(r.left-sr.left+r.width*0.58)+'px';
+  h.style.top=(r.top-sr.top+r.height*0.18)+'px';
+  sc.appendChild(h);
+  setTimeout(()=>h.remove(),1400);
+}
 function renderYard(){
   travelTick();visitorTick();autoTick();
   const p=db.pet,cos=ownedCos();
@@ -2906,7 +2940,7 @@ function renderYard(){
       ${gardenHTML()}
       <div class="yard-flower" style="line-height:0">${FLOWER_SVG}</div>
       ${p.state==='home'?`<div class="yard-act-bubble">${HOME_ACTIVITIES[p.homeAct||'idle'].label} · ${HOME_ACTIVITIES[p.homeAct||'idle'].desc}</div>`:''}
-      <div class="yard-sheep">${sheepSVG(p.state==='back'?'pack':(p.homeAct||'idle'),{hat:cos.hat,bow:cos.bow,bag:p.state==='back'})}</div>
+      <div class="yard-sheep" onclick="petSheep()" title="摸摸它" style="cursor:pointer">${sheepSVG(p.state==='back'?'pack':(p.homeAct||'idle'),{hat:cos.hat,bow:cos.bow,bag:p.state==='back'})}</div>
       ${db.visitor?`<div class="yard-visitor">
         <div class="visitor-bubble">${VISITOR_MAP[db.visitor.id].greet}</div>
         ${visitorSVG(db.visitor.id)}
