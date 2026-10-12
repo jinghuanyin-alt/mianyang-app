@@ -12,6 +12,17 @@
 <meta name="apple-mobile-web-app-title" content="绵羊">
 <link rel="apple-touch-icon" href="icon.svg">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 9c-1-3 1-5 1-5s3 1 3 4' fill='none' stroke='%232E7D5B' stroke-width='2' stroke-linecap='round'/%3E%3Ccircle cx='16' cy='19' r='11' fill='%23D14E3A'/%3E%3Cpath d='M12 16c0 3 1.5 5 4 6-3 .5-6-1.5-6-5 0-2 1-3.5 2-4z' fill='%23B53C2C'/%3E%3C/svg%3E">
+<script>
+/* 提前应用主题，避免页面闪白 */
+(function(){
+  try{
+    var ui=JSON.parse(localStorage.getItem('mianyang_ui')||'{}');
+    var mode=ui.theme||'auto';
+    var dark=mode==='dark'||(mode==='auto'&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+    if(dark)document.documentElement.setAttribute('data-theme','dark');
+  }catch(e){}
+})();
+</script>
 <style>
 :root{
   --bg:#F4F5F2; --surface:#FFFFFF; --ink:#202925; --ink-2:#68706A; --ink-3:#9AA19B;
@@ -26,11 +37,22 @@
   --font:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Segoe UI",sans-serif;
   --mono:"SF Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
 }
+[data-theme="dark"]{
+  --bg:#141A17; --surface:#1E2622; --ink:#E3E8E3; --ink-2:#98A29A; --ink-3:#677169;
+  --line:#2C352F; --line-soft:#262E29;
+  --brand:#2E4A40; --brand-soft:#26392F;
+  --tomato:#D7604D; --tomato-ink:#E08372; --tomato-soft:#3A2520;
+  --green:#4E9C7D; --green-soft:#22332A;
+  --amber:#C99A4E; --amber-soft:#352E1E;
+  --blue:#6B95B5; --blue-soft:#21303C;
+  --shadow:0 1px 2px rgba(0,0,0,.35);
+}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
 body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15px;line-height:1.6;}
 button{font-family:inherit;font-size:inherit;cursor:pointer;border:none;background:none;color:inherit}
 input,select,textarea{font-family:inherit;font-size:15px;color:var(--ink)}
+input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--surface)}
 ::placeholder{color:var(--ink-3)}
 
 /* ===== 布局 ===== */
@@ -148,7 +170,7 @@ input,select,textarea{font-family:inherit;font-size:15px;color:var(--ink)}
 .cal-item .ci-title{overflow:hidden;text-overflow:ellipsis}
 .cal-item .ci-time{font-family:var(--mono);font-size:10px;flex:none}
 .cal-item.event{background:var(--blue-soft);color:var(--blue)}
-.cal-item.task{color:var(--cc);border-left:3px solid var(--cc);background:color-mix(in srgb,var(--cc) 9%,#fff)}
+.cal-item.task{color:var(--cc);border-left:3px solid var(--cc);background:color-mix(in srgb,var(--cc) 10%,var(--surface))}
 .cal-item.task .ci-check{width:8px;height:8px;border-radius:50%;border:1.3px solid var(--cc);flex:none}
 .cal-item.task.done{opacity:.5}
 .cal-item.task.done .ci-check{background:var(--cc)}
@@ -198,17 +220,71 @@ input,select,textarea{font-family:inherit;font-size:15px;color:var(--ink)}
 .hg-cell.l1{background:#BFD8CB}.hg-cell.l2{background:#86B79C}.hg-cell.l3{background:#4E9270}.hg-cell.l4{background:var(--green)}
 .hg-cell.future{background:#F1F2EC}
 .hg-cell.today{box-shadow:inset 0 0 0 2px var(--brand)}
+[data-theme="dark"] .hg-cell.l1{background:#274637}
+[data-theme="dark"] .hg-cell.l2{background:#315C46}
+[data-theme="dark"] .hg-cell.l3{background:#3C7659}
+[data-theme="dark"] .hg-cell.l4{background:var(--green)}
+[data-theme="dark"] .hg-cell.future{background:#1C231F}
 
 /* ===== 设置 ===== */
 .setting-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line-soft)}
 .setting-row:last-child{border-bottom:none}
 .setting-row label{font-weight:500}
 .setting-row .hint{font-size:12.5px;color:var(--ink-2)}
-.setting-row input[type=number]{width:74px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;text-align:center}
+.setting-row input[type=number]{width:74px;padding:7px 9px;background:var(--surface);border:1px solid var(--line);border-radius:8px;text-align:center}
 .switch{width:44px;height:25px;border-radius:999px;background:#C8CCC4;position:relative;transition:background .15s;flex:none}
 .switch::after{content:"";position:absolute;width:21px;height:21px;border-radius:50%;background:#fff;top:2px;left:2px;transition:left .15s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
 .switch.on{background:var(--green)}
 .switch.on::after{left:21px}
+
+/* ===== 统计页 ===== */
+.chart-bars{display:flex;align-items:flex-end;gap:5px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;min-width:0}
+.bar-val{font-size:11px;font-family:var(--mono);color:var(--ink-2);height:16px;line-height:16px}
+.bar-area{height:104px;display:flex;align-items:flex-end;width:100%;justify-content:center}
+.bar{width:66%;max-width:20px;border-radius:4px 4px 0 0;background:var(--brand)}
+.bar.today{background:var(--tomato)}
+[data-theme="dark"] .bar{background:#4E6B5C}
+[data-theme="dark"] .bar.today{background:var(--tomato)}
+.bar-lab{font-size:10px;color:var(--ink-3);margin-top:5px;height:14px}
+.stats-grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.donut{width:128px;flex:none}
+.donut-num{font-size:21px;font-weight:700;font-family:var(--mono);fill:var(--ink)}
+.donut-lab{font-size:11px;fill:var(--ink-3)}
+.donut-wrap{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.legend{flex:1;min-width:110px}
+.legend-row{display:flex;align-items:center;gap:8px;font-size:13px;padding:3px 0}
+.legend-dot{width:9px;height:9px;border-radius:50%;flex:none}
+.legend-name{flex:1}
+.legend-val{font-family:var(--mono);color:var(--ink-2);font-size:12px}
+.hr-row{margin-bottom:12px}
+.hr-row:last-child{margin-bottom:0}
+.hr-top{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.hr-name{flex:1;font-size:13.5px}
+.hr-pct{font-size:12px;color:var(--ink-2);font-family:var(--mono)}
+.hr-track{height:8px;background:var(--line-soft);border-radius:999px;overflow:hidden}
+.hr-fill{height:100%;border-radius:999px}
+
+/* ===== FAB（手机端浮动添加） ===== */
+.fab{display:none}
+.fab-menu{display:none}
+.fab{position:fixed;right:18px;bottom:84px;width:54px;height:54px;border-radius:50%;
+  background:var(--tomato);color:#fff;z-index:50;align-items:center;justify-content:center;
+  box-shadow:0 4px 14px rgba(209,78,58,.42)}
+.fab svg{width:25px;height:25px;stroke:#fff;transition:transform .2s}
+.fab.open svg{transform:rotate(45deg)}
+.fab-menu{position:fixed;right:18px;bottom:150px;z-index:50;flex-direction:column;
+  gap:9px;align-items:flex-end}
+.fab-menu .fab-item{background:var(--surface);border:1px solid var(--line);
+  border-radius:999px;padding:10px 18px;font-size:14px;font-weight:600;
+  box-shadow:var(--shadow);display:flex;align-items:center;gap:7px}
+.fab-menu .fab-item svg{width:16px;height:16px}
+.fab-menu.show{display:flex}
+
+/* ===== 勾选微交互 ===== */
+@keyframes checkPop{0%{transform:scale(1)}50%{transform:scale(1.3)}100%{transform:scale(1)}}
+.task.done .check{animation:checkPop .3s ease}
+.habit-check.done{animation:checkPop .3s ease}
 
 /* ===== 番茄钟浮层 ===== */
 .timer-overlay{position:fixed;inset:0;background:#1E2A26;z-index:100;display:none;flex-direction:column;color:#F2F4F0}
@@ -262,6 +338,10 @@ input,select,textarea{font-family:inherit;font-size:15px;color:var(--ink)}
   .cal-item{font-size:10px;line-height:1.45;gap:2px;padding:0 3px 0 2px}
   .cal-item.task{border-left-width:2px}
   .ev-time{min-width:74px;font-size:12px}
+  .fab{display:flex}
+  .stats-grid2{grid-template-columns:1fr}
+  .chart-bars{gap:3px}
+  .bar-lab{font-size:9px}
 }
 </style>
 </head>
@@ -310,6 +390,18 @@ input,select,textarea{font-family:inherit;font-size:15px;color:var(--ink)}
 <div class="modal-mask" id="modalMask"><div class="modal" id="modal"></div></div>
 <div class="toast" id="toast"></div>
 
+<div class="fab-menu" id="fabMenu">
+  <button class="fab-item" onclick="fabClose();taskModal()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>任务</button>
+  <button class="fab-item" onclick="fabClose();evModal()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>日程</button>
+  <button class="fab-item" onclick="fabClose();habitModal()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="5"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>习惯</button>
+</div>
+<button class="fab" id="fab" onclick="fabToggle(event)">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+</button>
+
 <script>
 /* ============================================================
    绵羊 · 效率三件套 —— 单文件 PWA 原型（P0）
@@ -333,6 +425,18 @@ function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show'
 function openModal(html){$('#modal').innerHTML=html;$('#modalMask').classList.add('show');}
 function closeModal(){$('#modalMask').classList.remove('show');$('#modal').innerHTML='';}
 $('#modalMask').addEventListener('click',e=>{if(e.target.id==='modalMask')closeModal();});
+function fabToggle(e){
+  e.stopPropagation();
+  $('#fabMenu').classList.toggle('show');
+  $('#fab').classList.toggle('open');
+}
+function fabClose(){
+  $('#fabMenu').classList.remove('show');
+  $('#fab').classList.remove('open');
+}
+document.addEventListener('click',e=>{
+  if($('#fabMenu').classList.contains('show')&&!e.target.closest('#fabMenu')&&!e.target.closest('#fab'))fabClose();
+});
 
 /* ---------- 数据层 ---------- */
 const STORE_KEY='mianyang_app_v1';
@@ -521,6 +625,7 @@ const ICONS={
   play:'<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>',
   check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>',
   trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13"/></svg>',
+  stats:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18"/><path d="M6 20v-6"/><path d="M12 20V8"/><path d="M18 20v-9"/></svg>',
   plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>'
 };
 
@@ -530,6 +635,7 @@ const ROUTES=[
   {id:'calendar',name:'日历',icon:ICONS.calendar},
   {id:'tasks',name:'任务',icon:ICONS.tasks},
   {id:'habits',name:'打卡',icon:ICONS.habits},
+  {id:'stats',name:'统计',icon:ICONS.stats},
   {id:'settings',name:'设置',icon:ICONS.settings}
 ];
 function urgentTasks(){
@@ -1133,8 +1239,171 @@ function updateHeroTimer(){
 }
 
 /* ============================================================
+   统计复盘
+   ============================================================ */
+let statsRange='week';
+function rangeBounds(){
+  const now=new Date();
+  const t=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  let start;
+  if(statsRange==='week'){
+    start=new Date(t);
+    start.setDate(start.getDate()-((t.getDay()+6)%7));
+  }else if(statsRange==='month'){
+    start=new Date(now.getFullYear(),now.getMonth(),1);
+  }else{
+    start=new Date(t);
+    start.setDate(start.getDate()-29);
+  }
+  return {start:dateStr(start),end:dateStr(t),days:Math.round((t-start)/86400000)+1};
+}
+function eachDay(start,end){
+  const out=[];const d=parseDate(start);
+  for(;dateStr(d)<=end;d.setDate(d.getDate()+1))out.push(dateStr(d));
+  return out;
+}
+function focusMinutes(p){
+  if(p.actual)return p.actual;
+  if(p.end_time&&p.start_time)return Math.max(0,Math.round((new Date(p.end_time)-new Date(p.start_time))/60000));
+  return 0;
+}
+function donutHtml(parts){
+  const total=parts.reduce((s,p)=>s+p.value,0);
+  if(!total)return '<div class="empty" style="padding:18px">还没有专注记录</div>';
+  const r=48,c=2*Math.PI*r;
+  let acc=0;
+  const segs=parts.map(p=>{
+    const frac=p.value/total;
+    const h=`<circle cx="70" cy="70" r="${r}" fill="none" stroke="${p.color}" stroke-width="15"
+      stroke-dasharray="${(frac*c).toFixed(2)} ${c.toFixed(2)}"
+      stroke-dashoffset="${(-acc*c).toFixed(2)}" transform="rotate(-90 70 70)"/>`;
+    acc+=frac;
+    return h;
+  }).join('');
+  return `<svg viewBox="0 0 140 140" class="donut">${segs}
+    <text x="70" y="66" text-anchor="middle" class="donut-num">${total}</text>
+    <text x="70" y="85" text-anchor="middle" class="donut-lab">个番茄</text></svg>`;
+}
+function renderStats(){
+  const {start,end,days}=rangeBounds();
+  const ps=db.pomodoros.filter(p=>{const d=p.start_time.slice(0,10);return d>=start&&d<=end;});
+  const pomoDone=ps.filter(p=>p.completed===1).length;
+  const mins=ps.reduce((s,p)=>s+focusMinutes(p),0);
+  const focusH=(mins/60).toFixed(1);
+  let tasksDone=0;
+  db.tasks.forEach(t=>{
+    if(t.rrule){
+      (t.doneDates||[]).forEach(d=>{
+        if(d.completed_at){const x=d.completed_at.slice(0,10);if(x>=start&&x<=end)tasksDone++;}
+      });
+    }else if(t.status==='done'&&t.completed_at){
+      const x=t.completed_at.slice(0,10);if(x>=start&&x<=end)tasksDone++;
+    }
+  });
+  let dueN=0,dueDone=0;
+  eachDay(start,end).forEach(d=>{
+    db.tasks.forEach(t=>{
+      if(taskOccursOn(t,d)){dueN++;if(instanceDone(t,d))dueDone++;}
+    });
+  });
+  const duePct=dueN?Math.round(dueDone/dueN*100):0;
+  const habs=db.habits.filter(h=>!h.archived);
+  let habDays=0,habDone=0;
+  const habRows=habs.map(h=>{
+    const created=h.created_at?h.created_at.slice(0,10):start;
+    const s0=created>start?created:start;
+    const n=Math.max(1,Math.round((parseDate(end)-parseDate(s0))/86400000)+1);
+    const done=db.habitLogs.filter(l=>l.habit_id===h.id&&l.date>=s0&&l.date<=end).length;
+    habDays+=n;habDone+=done;
+    const pct=Math.round(done/n*100);
+    return `<div class="hr-row">
+      <div class="hr-top"><span class="habit-dot" style="background:${h.color}"></span>
+        <span class="hr-name">${esc(h.name)}</span>
+        <span class="hr-pct">${done}/${n} · ${pct}%</span></div>
+      <div class="hr-track"><div class="hr-fill" style="width:${pct}%;background:${h.color}"></div></div>
+    </div>`;
+  }).join('');
+  const habPct=habDays?Math.round(habDone/habDays*100):0;
+  const trend=[];
+  for(let i=13;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const ds=dateStr(d);
+    trend.push({ds,n:db.pomodoros.filter(p=>p.completed===1&&p.start_time.slice(0,10)===ds).length,
+      lab:d.getDate(),today:ds===todayStr()});
+  }
+  const maxN=Math.max(1,...trend.map(x=>x.n));
+  const dimMap={};
+  ps.forEach(p=>{
+    const t=p.task_id?db.tasks.find(x=>x.id===p.task_id):null;
+    const k=t?t.list:'未分类';
+    dimMap[k]=(dimMap[k]||0)+1;
+  });
+  const dimParts=Object.keys(dimMap).map(k=>({label:k,
+    color:k==='未分类'?'#9AA19B':listColor(k),value:dimMap[k]})).sort((a,b)=>b.value-a.value);
+  const dimTotal=dimParts.reduce((s,p)=>s+p.value,0);
+  const legend=dimParts.map(p=>`<div class="legend-row">
+    <span class="legend-dot" style="background:${p.color}"></span>
+    <span class="legend-name">${esc(p.label)}</span>
+    <span class="legend-val">${p.value} · ${Math.round(p.value/dimTotal*100)}%</span>
+  </div>`).join('');
+  const rangeNames={week:'本周',month:'本月',days30:'近30天'};
+  $('#page').innerHTML=`
+    <div class="page-head"><div class="page-title">统计</div>
+      <div class="page-sub">${start.replace(/-/g,'/')} — ${end.replace(/-/g,'/')} · 共 ${days} 天</div></div>
+    <div class="chips">${['week','month','days30'].map(r=>`<button class="chip ${statsRange===r?'active':''}" onclick="statsRange='${r}';renderStats()">${rangeNames[r]}</button>`).join('')}</div>
+    <div class="stats">
+      <div class="stat"><div class="stat-num">${pomoDone}<small>个</small></div><div class="stat-label">完成番茄 · ${focusH} 小时</div></div>
+      <div class="stat"><div class="stat-num">${tasksDone}<small>项</small></div><div class="stat-label">完成任务 · 到期完成率 ${duePct}%</div></div>
+      <div class="stat"><div class="stat-num">${habPct}<small>%</small></div><div class="stat-label">习惯打卡 · ${habDone}/${habDays}</div></div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <div class="card-title">近 14 天专注趋势</div>
+      <div class="chart-bars">
+        ${trend.map(x=>`<div class="bar-col" title="${x.ds}：${x.n} 个番茄">
+          <div class="bar-val">${x.n||''}</div>
+          <div class="bar-area"><div class="bar ${x.today?'today':''}" style="height:${Math.round(x.n/maxN*100)}%"></div></div>
+          <div class="bar-lab">${x.lab}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="stats-grid2" style="margin-top:14px">
+      <div class="card">
+        <div class="card-title">维度分布（番茄）</div>
+        <div class="donut-wrap">
+          ${donutHtml(dimParts)}
+          ${dimTotal?`<div class="legend">${legend}</div>`:''}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">习惯完成率</div>
+        ${habs.length?habRows:'<div class="empty">还没有习惯，去打卡页建一个</div>'}
+      </div>
+    </div>`;
+}
+
+/* ============================================================
    设置
    ============================================================ */
+const UI_KEY='mianyang_ui';
+function loadUi(){
+  try{return JSON.parse(localStorage.getItem(UI_KEY)||'{}');}catch(e){return {};}
+}
+function applyTheme(){
+  const ui=loadUi();const mode=ui.theme||'auto';
+  const dark=mode==='dark'||(mode==='auto'&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+  if(dark)document.documentElement.setAttribute('data-theme','dark');
+  else document.documentElement.removeAttribute('data-theme');
+  const mc=document.querySelector('meta[name="theme-color"]');
+  if(mc)mc.setAttribute('content',dark?'#141A17':'#234036');
+}
+function setTheme(mode){
+  localStorage.setItem(UI_KEY,JSON.stringify(Object.assign(loadUi(),{theme:mode})));
+  applyTheme();
+  if(location.hash==='#/settings')renderSettings();
+}
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{
+  if((loadUi().theme||'auto')==='auto')applyTheme();
+});
 function renderSettings(){
   const s=db.settings;
   const count={tasks:db.tasks.length,events:db.events.length,pomodoros:db.pomodoros.length,habits:db.habits.length,logs:db.habitLogs.length};
@@ -1164,6 +1433,14 @@ function renderSettings(){
         <button class="btn btn-primary" id="syncConnectBtn">连接</button>
       </div>
     </div>`;
+  const themeMode=loadUi().theme||'auto';
+  const themeCard=`
+  <div class="card">
+    <div class="card-title">外观</div>
+    <div class="chips" style="margin-bottom:0">
+      ${[['light','浅色'],['dark','深色'],['auto','跟随系统']].map(o=>`<button class="chip ${themeMode===o[0]?'active':''}" onclick="setTheme('${o[0]}')">${o[1]}</button>`).join('')}
+    </div>
+  </div>`;
   const dimCard=`
     <div class="card">
       <div class="card-title">维度管理</div>
@@ -1189,6 +1466,7 @@ function renderSettings(){
   $('#page').innerHTML=`
     <div class="page-head"><div class="page-title">设置</div><div class="page-sub">所有数据只保存在当前浏览器，建议定期导出备份</div></div>
     ${syncCard}
+    ${themeCard}
     ${dimCard}
     <div class="card">
       <div class="card-title">番茄钟时长（分钟）</div>
@@ -1319,7 +1597,7 @@ function clearAll(){
    ============================================================ */
 function render(){
   const view=location.hash.replace('#/','')||'today';
-  const map={today:renderToday,calendar:renderCalendar,tasks:renderTasks,habits:renderHabits,settings:renderSettings};
+  const map={today:renderToday,calendar:renderCalendar,tasks:renderTasks,habits:renderHabits,stats:renderStats,settings:renderSettings};
   (map[view]||renderToday)();
   window.scrollTo(0,0);
 }
