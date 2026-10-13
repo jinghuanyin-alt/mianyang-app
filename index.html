@@ -59,6 +59,27 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
 .app{min-height:100vh;display:flex}
 .sidebar{width:272px;background:var(--surface);border-right:1px solid var(--line);padding:22px 14px;display:flex;flex-direction:column;gap:4px;position:fixed;top:0;bottom:0;left:0;z-index:30;overflow-y:auto}
 .brand{display:flex;align-items:center;gap:9px;padding:4px 10px 18px;font-weight:700;font-size:17px;letter-spacing:.5px}
+.nav-search{display:flex;align-items:center;gap:8px;margin:0 4px 12px;padding:9px 12px;border-radius:10px;
+  background:var(--bg);border:1px solid var(--line);color:var(--ink-2);font-size:13px;cursor:pointer;text-align:left;width:calc(100% - 8px)}
+.nav-search:hover{border-color:var(--brand);color:var(--brand)}
+/* 全局搜索 */
+.search-overlay{position:fixed;inset:0;background:rgba(30,40,35,.32);backdrop-filter:blur(2px);z-index:200;
+  display:none;align-items:flex-start;justify-content:center;padding:9vh 20px 20px}
+.search-overlay.show{display:flex;animation:fadeIn .15s}
+.search-box{width:100%;max-width:600px;background:var(--surface);border-radius:18px;box-shadow:0 22px 60px rgba(0,0,0,.22);overflow:hidden}
+.search-input-wrap{display:flex;align-items:center;gap:11px;padding:16px 20px;border-bottom:1px solid var(--line);color:var(--ink-2)}
+.search-input-wrap input{flex:1;border:none;outline:none;font-size:16px;background:transparent;color:var(--ink)}
+.search-close{border:none;background:none;font-size:26px;line-height:1;color:var(--ink-2);cursor:pointer;padding:0 2px}
+.search-results{max-height:56vh;overflow-y:auto;padding:8px}
+.search-hint{padding:26px 20px;text-align:center;color:var(--ink-2);font-size:13.5px}
+.sr-group{font-size:11.5px;color:var(--ink-2);font-weight:700;padding:12px 16px 5px;letter-spacing:.5px}
+.sr-row{display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:10px;cursor:pointer}
+.sr-row:hover{background:var(--bg)}
+.sr-dot{width:8px;height:8px;border-radius:50%;flex:none}
+.sr-title{flex:1;font-size:14px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sr-title.done{text-decoration:line-through;color:var(--ink-2)}
+.sr-title mark{background:#FBE9A6;color:inherit;border-radius:3px;padding:0 1px}
+.sr-tag{font-size:11.5px;color:var(--ink-2);background:var(--bg);border-radius:6px;padding:2px 8px;flex:none}
 .brand-dot{width:26px;height:26px;border-radius:50%;background:var(--tomato);position:relative;flex:none}
 .brand-dot::after{content:"";position:absolute;top:-5px;left:11px;width:8px;height:7px;background:var(--green);border-radius:80% 20% 80% 20%;transform:rotate(35deg)}
 .nav-item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:var(--radius-sm);color:var(--ink-2);font-weight:500;text-align:left;width:100%}
@@ -112,6 +133,15 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
 .field textarea{resize:vertical;min-height:60px}
 .field-row{display:flex;gap:10px}.field-row .field{flex:1}
 .empty{text-align:center;padding:34px 16px;color:var(--ink-3);font-size:14px}
+/* 贴纸化空状态 */
+.empty-state{padding:34px 20px 38px;text-align:center}
+.empty-sticker{width:118px;height:106px;margin:0 auto 14px;display:flex;align-items:flex-end;justify-content:center;
+  background:radial-gradient(circle at 50% 70%,#F1EDE2 0%,#F1EDE2 52%,transparent 53%);
+  border-radius:50%;animation:stickerFloat 3s ease-in-out infinite}
+.empty-sticker .sheep{width:108px;height:auto;filter:drop-shadow(0 5px 7px rgba(120,110,90,.18))}
+@keyframes stickerFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.empty-text{font-size:14px;font-weight:600;color:var(--ink-2)}
+.empty-sub{font-size:12.5px;color:var(--ink-3);margin-top:6px;line-height:1.7}
 .empty svg{width:38px;height:38px;margin-bottom:8px;stroke:var(--ink-3)}
 .toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%) translateY(20px);background:var(--brand);color:#fff;padding:10px 20px;border-radius:999px;font-size:14px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:200;max-width:88vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -133,6 +163,30 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
 .section-row h3{font-size:15.5px;font-weight:700}
 .section-row .link{font-size:13px;color:var(--ink-2)}
 .section-row .link:hover{color:var(--brand)}
+
+/* ===== 今日三只青蛙 ===== */
+.frog-card{background:linear-gradient(135deg,#F0F8EA,#E6F2DA);border:1.5px solid #BFE0A8;border-radius:16px;padding:14px 16px;margin-bottom:16px}
+.frog-head{display:flex;align-items:center;gap:11px}
+.frog-ic{width:38px;height:38px;flex:none;filter:drop-shadow(0 2px 3px rgba(90,140,70,.25))}
+.frog-head-txt{flex:1;min-width:0}
+.frog-head-title{font-size:15px;font-weight:800;color:#3F5E2E}
+.frog-head-sub{font-size:12px;color:#6C8A58;margin-top:1px}
+.frog-count{font-family:var(--mono);font-size:15px;font-weight:700;color:#5C8A43;background:#fff;border-radius:20px;padding:3px 11px;flex:none}
+.frog-row{display:flex;align-items:center;gap:10px;background:#fff;border-radius:11px;padding:9px 12px;margin-top:9px;border:1px solid #DDEBC9}
+.frog-num{width:22px;height:22px;flex:none;border-radius:50%;background:#7FB069;color:#fff;font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:var(--mono)}
+.frog-row .check{width:22px;height:22px;flex:none;background:#fff;border:2px solid #7FB069;border-radius:50%}
+.frog-title{flex:1;font-size:14px;font-weight:600;color:#2F3E2A;min-width:0}
+.frog-row.done .frog-title{text-decoration:line-through;color:#9AB08A}
+.frog-row.done .frog-num{background:#B7CDA4}
+.frog-remove{flex:none;border:none;background:none;color:#A9B89C;font-size:18px;line-height:1;cursor:pointer;padding:2px 4px}
+.frog-remove:hover{color:#E8849B}
+.frog-empty{font-size:12.5px;color:#6C8A58;margin-top:10px;line-height:1.6;background:#fff;border:1px dashed #BFE0A8;border-radius:10px;padding:10px 12px}
+.frog-key{color:#4E7A34;font-weight:700}
+.frog-toggle{width:26px;height:26px;padding:0;border-radius:7px;opacity:.42}
+.frog-toggle svg{width:18px;height:18px}
+.frog-toggle.on{opacity:1;background:#EAF5DF}
+.frog-toggle.on svg{animation:frogPop .3s}
+@keyframes frogPop{0%{transform:scale(.6)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
 
 /* ===== 任务 ===== */
 .task{display:flex;align-items:flex-start;gap:11px;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);margin-bottom:8px}
@@ -316,6 +370,12 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
 .timer-tasksel{display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.08);padding:9px 16px;border-radius:999px;color:rgba(255,255,255,.85);font-size:13.5px}
 .timer-tasksel select{background:transparent;color:#fff;border:none;outline:none;max-width:180px}
 .timer-tasksel select option{color:#222}
+.timer-ambient{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:center;margin-top:12px}
+.amb-label{font-size:12px;color:rgba(255,255,255,.55);margin-right:2px}
+.amb-btn{background:rgba(255,255,255,.08);color:rgba(255,255,255,.75);border:1px solid transparent;border-radius:999px;
+  padding:6px 13px;font-size:12.5px;cursor:pointer;transition:all .15s}
+.amb-btn:hover{background:rgba(255,255,255,.16)}
+.amb-btn.on{background:rgba(255,255,255,.92);color:#3a5a40;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.15)}
 
 /* ===== Modal ===== */
 .modal-mask{position:fixed;inset:0;background:rgba(24,32,28,.42);z-index:120;display:none;align-items:flex-end;justify-content:center}
@@ -733,6 +793,7 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
       <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 10l3 3 5-6"/></svg>
       <select id="timerTaskSel"></select>
     </div>
+    <div class="timer-ambient" id="timerAmbient"></div>
     <div class="timer-controls">
       <button class="t-btn t-btn-sub" id="btnReset" title="重置">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
@@ -746,9 +807,22 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
 </div>
 
 <div class="modal-mask" id="modalMask"><div class="modal" id="modal"></div></div>
+
+<div class="search-overlay" id="searchOverlay">
+  <div class="search-box">
+    <div class="search-input-wrap">
+      <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="searchInput" placeholder="搜索任务、日程、习惯…" autocomplete="off">
+      <button class="search-close" id="searchClose" title="关闭">×</button>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <div class="fab-menu" id="fabMenu">
+  <button class="fab-item" onclick="fabClose();openSearch()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>搜索</button>
   <button class="fab-item" onclick="fabClose();taskModal()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>任务</button>
   <button class="fab-item" onclick="fabClose();evModal()">
@@ -1036,6 +1110,35 @@ function instanceDoneAt(t,date){
   if(t.rrule){const f=(t.doneDates||[]).find(x=>x.date===date);return f?f.completed_at:null;}
   return t.status==='done'?t.completed_at:null;
 }
+/* ===== 今日三只青蛙（青蛙工作法） ===== */
+const FROG_ICON='<svg viewBox="0 0 24 24"><ellipse cx="12" cy="15.2" rx="9" ry="6.6" fill="#7FB069"/><circle cx="7.3" cy="7.4" r="3.5" fill="#7FB069"/><circle cx="16.7" cy="7.4" r="3.5" fill="#7FB069"/><circle cx="7.3" cy="7.4" r="2.2" fill="#fff"/><circle cx="16.7" cy="7.4" r="2.2" fill="#fff"/><circle cx="7.7" cy="7.7" r="1.15" fill="#2F3E2A"/><circle cx="16.3" cy="7.7" r="1.15" fill="#2F3E2A"/><circle cx="8.1" cy="7.3" r="0.35" fill="#fff"/><circle cx="16.7" cy="7.3" r="0.35" fill="#fff"/><path d="M8 15.4q4 2.6 8 0" stroke="#3D5A30" stroke-width="1.3" fill="none" stroke-linecap="round"/><ellipse cx="6" cy="16" rx="1.6" ry="1.1" fill="#9BC786" opacity=".7"/><ellipse cx="18" cy="16" rx="1.6" ry="1.1" fill="#9BC786" opacity=".7"/></svg>';
+function frogOfDay(){if(!db.frogOfDay)db.frogOfDay={};return db.frogOfDay;}
+function frogIdsToday(){return frogOfDay()[todayStr()]||[];}
+function isFrog(id){return frogIdsToday().includes(id);}
+function toggleFrog(id){
+  const d=frogOfDay(),t=todayStr();
+  if(!d[t])d[t]=[];
+  const i=d[t].indexOf(id);
+  if(i>=0){d[t].splice(i,1);SFX.tap();toast('已移出今日青蛙');}
+  else{
+    if(d[t].length>=3){toast('每天最多 3 只青蛙，先专注吃掉它们');return;}
+    d[t].push(id);SFX.buy();toast('设为今日青蛙，先吃掉这只最难的');
+  }
+  save();render();
+}
+function frogTasks(){
+  const t=todayStr();
+  return frogIdsToday().map(id=>db.tasks.find(x=>x.id===id))
+    .filter(x=>x&&taskOccursOn(x,t));
+}
+function frogDoneCount(){
+  const t=todayStr();
+  return frogIdsToday().filter(id=>{const x=db.tasks.find(y=>y.id===id);return x&&instanceDone(x,t);}).length;
+}
+const FROG_CHEERS=['吃掉了一只大青蛙，好样的！','最难的事都搞定了，今天你赢了','咕呱～这只青蛙被你拿下了！','先难后易，剩下的都很轻松','小羊都在院子里为你鼓掌'];
+function frogCheer(){return FROG_CHEERS[Math.floor(Math.random()*FROG_CHEERS.length)];}
+const COMPLIMENTS=['完成一件事，真棒！','小羊在院子里为你开心','又向目标靠近了一步','继续保持这个节奏','专注的你真好看','小日子被你打理得很好','一步一步来，稳稳的','今天也辛苦啦'];
+function compliment(){return COMPLIMENTS[Math.floor(Math.random()*COMPLIMENTS.length)];}
 function toggleInstance(id,date){
   const t=db.tasks.find(x=>x.id===id);if(!t)return;
   date=date||todayStr();
@@ -1051,7 +1154,16 @@ function toggleInstance(id,date){
       awardCoins('task');gained=true;}
   }
   save();render();
-  if(gained){SFX.done();coinFly(AWARD_RULE[t.rrule?'repeat':'task']);gainExp(10);checkAchievements();}
+  if(gained){
+    SFX.done();
+    const base=AWARD_RULE[t.rrule?'repeat':'task'];
+    let extra=0;
+    if(isFrog(id)){extra=5;db.coins+=5;}
+    coinFly(base+extra);
+    gainExp(10);checkAchievements();
+    if(extra){setTimeout(()=>toast(frogCheer()+'  +'+(base+extra)+' 草叶'),430);}
+    else if(Math.random()<.55){setTimeout(()=>toast(compliment()),430);}
+  }
 }
 function doneTodayCount(){
   const t=todayStr();
@@ -1122,10 +1234,56 @@ function urgentTasks(){
 function navBtn(r,cur){
   return `<button class="nav-item ${cur===r.id?'active':''}" onclick="location.hash='#/${r.id}';drawerClose()">${r.icon}<span>${r.name}</span></button>`;
 }
+/* ===== 全局搜索 ===== */
+function openSearch(){
+  $('#searchOverlay').classList.add('show');
+  $('#searchInput').value='';doSearch('');
+  setTimeout(()=>$('#searchInput').focus(),60);
+}
+function closeSearch(){$('#searchOverlay').classList.remove('show');}
+function highlightTerm(text,q){
+  const i=text.toLowerCase().indexOf(q);
+  if(i<0)return esc(text);
+  return esc(text.slice(0,i))+'<mark>'+esc(text.slice(i,i+q.length))+'</mark>'+esc(text.slice(i+q.length));
+}
+function doSearch(q){
+  q=(q||'').trim().toLowerCase();
+  const box=$('#searchResults');
+  if(!q){box.innerHTML='<div class="search-hint">输入关键词，搜任务、日程和习惯</div>';return;}
+  const tasks=db.tasks.filter(t=>t.title.toLowerCase().includes(q)||(t.note||'').toLowerCase().includes(q));
+  const events=db.events.filter(e=>e.title.toLowerCase().includes(q));
+  const habits=db.habits.filter(h=>!h.archived&&h.name.toLowerCase().includes(q));
+  let html='';
+  if(tasks.length){
+    html+='<div class="sr-group">任务</div>'+tasks.map(t=>{
+      const c=listColor(t.list),done=t.status==='done';
+      return `<div class="sr-row" onclick="closeSearch();taskModal('${t.id}')">
+        <span class="sr-dot" style="background:${c}"></span>
+        <span class="sr-title ${done?'done':''}">${highlightTerm(t.title,q)}</span>
+        <span class="sr-tag">${esc(t.list)}</span></div>`;
+    }).join('');
+  }
+  if(events.length){
+    html+='<div class="sr-group">日程</div>'+events.map(e=>
+      `<div class="sr-row" onclick="closeSearch();location.hash='#/calendar'">
+        <span class="sr-dot" style="background:#5B9EBD"></span>
+        <span class="sr-title">${highlightTerm(e.title,q)}</span>
+        <span class="sr-tag">${e.date.slice(5)} ${e.time||''}</span></div>`).join('');
+  }
+  if(habits.length){
+    html+='<div class="sr-group">习惯</div>'+habits.map(h=>
+      `<div class="sr-row" onclick="closeSearch();location.hash='#/habits'">
+        <span class="sr-dot" style="background:${h.color}"></span>
+        <span class="sr-title">${highlightTerm(h.name,q)}</span>
+        <span class="sr-tag">习惯</span></div>`).join('');
+  }
+  box.innerHTML=html||('<div class="search-hint">没有找到「'+esc(q)+'」相关内容</div>');
+}
 function renderNav(){
   const cur=location.hash.replace('#/','')||'today';
   const urgent=urgentTasks();
   $('#nav').innerHTML='<div class="brand"><span class="brand-dot"></span>绵羊</div>'+
+    '<button class="nav-search" onclick="openSearch()"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>搜索任务…</button>'+
     MAIN_ROUTES.map(r=>navBtn(r,cur)).join('')
     +'<div class="side-group-title">更多</div>'
     +SUB_ROUTES.map(r=>navBtn(r,cur)).join('')
@@ -1193,6 +1351,7 @@ function pauseTimer(){
   timer.running=false;timer.endAt=null;saveTimer();renderTimer();
 }
 function resetTimer(){
+  stopAmbient();
   timer.running=false;timer.remain=modeDur(timer.mode);timer.endAt=null;timer.startedAt=null;saveTimer();renderTimer();
 }
 function stopEarly(){
@@ -1222,6 +1381,7 @@ function completeSession(){
     gainExp(10);
     checkAchievements();
     notify('专注完成，休息一下吧');
+    stopAmbient();
     const next=(timer.cycle%setting('longEvery')===0)?'long':'short';
     timer.mode=next;
   }else{
@@ -1271,7 +1431,16 @@ function openTimer(taskId){
   $('#timerOverlay').classList.add('show');
   renderTimer();
 }
-$('#timerClose').addEventListener('click',()=>$('#timerOverlay').classList.remove('show'));
+$('#timerClose').addEventListener('click',()=>{stopAmbient();$('#timerOverlay').classList.remove('show');});
+$('#searchClose').addEventListener('click',closeSearch);
+$('#searchInput').addEventListener('input',e=>doSearch(e.target.value));
+$('#searchOverlay').addEventListener('click',e=>{if(e.target.id==='searchOverlay')closeSearch();});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeSearch();}
+  if((e.key==='/'||(e.key==='k'&&(e.ctrlKey||e.metaKey)))&&!/input|textarea|select/i.test(document.activeElement.tagName)){
+    e.preventDefault();openSearch();
+  }
+});
 $('#btnStart').addEventListener('click',()=>{timer.running?pauseTimer():startTimer();});
 $('#btnReset').addEventListener('click',resetTimer);
 $('#btnStop').addEventListener('click',stopEarly);
@@ -1284,6 +1453,9 @@ function renderTimer(){
   $('#timerTaskSel').innerHTML='<option value="">未选择任务</option>'+openTasks.map(t=>
     `<option value="${t.id}" ${timer.taskId===t.id?'selected':''}>${esc(t.title)}</option>`).join('');
   $('#timerTaskSel').onchange=e=>{timer.taskId=e.target.value||null;saveTimer();renderTimer();};
+  $('#timerAmbient').innerHTML='<span class="amb-label">白噪音</span>'+
+    Object.keys(AMBIENTS).map(k=>`<button class="amb-btn ${ambKind===k?'on':''}" onclick="toggleAmbient('${k}')">${AMBIENTS[k].label}</button>`).join('')+
+    `<button class="amb-btn ${!ambKind?'on':''}" onclick="toggleAmbient(null)">静音</button>`;
   $('#ringFg').style.stroke=meta.color;
   $('.t-btn-main').style.background=meta.color;
   $('#btnStart').textContent=timer.running?'暂停':(timer.mode==='focus'?'开始专注':'开始休息');
@@ -1437,6 +1609,7 @@ function taskRow(t,date){
       </div>
     </div>
     <div class="task-actions">
+      <button class="icon-btn frog-toggle ${isFrog(t.id)?'on':''}" title="设为今日青蛙" onclick="toggleFrog('${t.id}')">${FROG_ICON}</button>
       <button class="icon-btn" title="开始专注" onclick="openTimer('${t.id}')">${ICONS.play}</button>
       ${!t.rrule?`<button class="icon-btn" title="推迟一天" onclick="postpone('${t.id}')"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/><path d="M15 13h4M17 11v4"/></svg></button>`:''}
       <button class="icon-btn" title="编辑" onclick="taskModal('${t.id}')"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
@@ -1464,8 +1637,15 @@ function renderTasks(){
   }else if(list.length){
     html+=list.map(t=>taskRow(t,t.due_date||todayStr())).join('');
   }else{
-    const tips={today:'今天还没有任务，添加一个开始吧',inbox:'待办箱是空的，没有日期的任务会放在这里',plan:'还没有排期的任务',all:'这里空空的',done:'还没有完成的任务'};
-    html+=`<div class="card"><div class="empty">${ICONS.tasks}<br>${tips[taskView]}</div></div>`;
+    const tipMap={
+      today:{t:'今天还没有任务',p:'graze',s:'点右下角「+」，添加一件想做的事'},
+      inbox:{t:'待办箱是空的',p:'sleep',s:'没有日期的任务会放在这里，不着急'},
+      plan:{t:'还没有排期的任务',p:'happy',s:'给任务定个日期，安排就会出现在这里'},
+      all:{t:'这里空空的',p:'graze',s:'新建一个任务，开始你的小日子'},
+      done:{t:'还没有完成的任务',p:'happy',s:'完成的任务会收在这里，积累成就感'}
+    };
+    const cfg=tipMap[taskView];
+    html+=`<div class="card">${emptyState(cfg.t,cfg.p,cfg.s)}</div>`;
   }
   html+=`<div style="margin-top:16px"><button class="btn btn-ghost btn-block" onclick="taskModal()">${ICONS.plus} 新建详细任务</button></div>`;
   $('#page').innerHTML=html;
@@ -1617,7 +1797,8 @@ function toggleHabit(hid){
   else{db.habitLogs.push({id:uid(),habit_id:hid,date:todayStr(),count:1,checked_at:new Date().toISOString()});
     awardCoins('habit');}
   save();renderHabits();
-  if(i<0){SFX.done();coinFly(AWARD_RULE.habit);gainExp(8);checkAchievements();}
+  if(i<0){SFX.done();coinFly(AWARD_RULE.habit);gainExp(8);checkAchievements();
+    if(Math.random()<.5)setTimeout(()=>toast(compliment()),430);}
 }
 function habitModal(id){
   const h=id?db.habits.find(x=>x.id===id):{name:'',color:HABIT_COLORS[0]};
@@ -1668,7 +1849,7 @@ function renderHabits(){
   const checkedCount=list.filter(h=>checkedToday(h.id)).length;
   let html=`<div class="page-head"><div class="page-title">习惯打卡</div><div class="page-sub">今天已完成 ${checkedCount} / ${list.length} 个习惯</div></div>`;
   if(!list.length){
-    html+=`<div class="card"><div class="empty">${ICONS.habits}<br>还没有习惯，先建一个每天坚持的小事吧</div></div>`;
+    html+=`<div class="card">${emptyState('还没有习惯','happy','先建一个每天坚持的小事，比如喝水、读书、散步')}</div>`;
   }else{
     html+=list.map(h=>{
       const done=checkedToday(h.id),st=habitStreak(h.id);
@@ -1699,6 +1880,28 @@ function companionDays(){
   const start=new Date(db.createdAt).toISOString().slice(0,10);
   const diff=new Date(todayStr()).getTime()-new Date(start).getTime();
   return Math.max(1,Math.round(diff/86400000)+1);
+}
+function frogCardHTML(){
+  const t=todayStr(),all=frogIdsToday(),doneN=frogDoneCount();
+  const rows=all.map((id,idx)=>{
+    const x=db.tasks.find(y=>y.id===id);
+    if(!x)return '';
+    const done=instanceDone(x,t);
+    return `<div class="frog-row ${done?'done':''}">
+      <span class="frog-num">${idx+1}</span>
+      <button class="check" style="border-color:#7FB069" onclick="toggleInstance('${id}','${t}')">${ICONS.check}</button>
+      <span class="frog-title">${esc(x.title)}</span>
+      <button class="frog-remove" title="移出今日青蛙" onclick="toggleFrog('${id}')">×</button>
+    </div>`;
+  }).join('');
+  return `<div class="frog-card">
+    <div class="frog-head">
+      <span class="frog-ic">${FROG_ICON}</span>
+      <div class="frog-head-txt"><div class="frog-head-title">今日三只青蛙</div><div class="frog-head-sub">先吃掉最难的，剩下的都很轻松</div></div>
+      <span class="frog-count">${doneN}/${all.length}</span>
+    </div>
+    ${all.length?rows:'<div class="frog-empty">在下面任务右侧点「青蛙」图标，挑出今天最重要的 1–3 件事</div>'}
+  </div>`;
 }
 function renderToday(){
   const t=todayStr();
@@ -1736,9 +1939,10 @@ function renderToday(){
       <div class="stat"><div class="stat-num">${doneTasks}<small>项</small></div><div class="stat-label">完成任务</div></div>
       <div class="stat"><div class="stat-num">${checkedN}/${habits.length}</div><div class="stat-label">习惯打卡</div></div>
     </div>
+    ${frogCardHTML()}
     <div class="section-row"><h3>今日任务</h3><button class="link" onclick="location.hash='#/tasks'">全部任务</button></div>
     <div class="add-bar"><input id="quickToday" placeholder="添加今天的任务，回车创建…"><button class="btn btn-primary" onclick="addTaskQuick($('#quickToday').value);$('#quickToday').value=''">添加</button></div>
-    ${todayTasks.length?todayTasks.map(x=>taskRow(x,t)).join(''):'<div class="card"><div class="empty">今天没有待办，享受轻松一天</div></div>'}
+    ${todayTasks.length?todayTasks.map(x=>taskRow(x,t)).join(''):`<div class="card">${emptyState('今天没有待办','graze','享受轻松的一天，小羊在院子里等你')}</div>`}
     <div class="section-row"><h3>今日习惯</h3><button class="link" onclick="location.hash='#/habits'">管理</button></div>
     ${habits.length?habits.map(h=>{
       const done=checkedToday(h.id);
@@ -1747,9 +1951,9 @@ function renderToday(){
         <div class="habit-body"><div class="habit-name">${esc(h.name)}</div><div class="habit-streak">连续 ${habitStreak(h.id)} 天</div></div>
         <button class="habit-check ${done?'done':''}" style="width:36px;height:36px;${done?'':('border-color:'+h.color)}" onclick="toggleHabit('${h.id}')">${ICONS.check}</button>
       </div>`;
-    }).join(''):'<div class="card"><div class="empty">还没有习惯，去打卡页建一个</div></div>'}
+    }).join(''):`<div class="card">${emptyState('今天没有习惯打卡','happy','去打卡页建一个每天坚持的小事')}</div>`}
     <div class="section-row"><h3>今日日程</h3><button class="link" onclick="location.hash='#/calendar'">日历</button></div>
-    ${todayEvs.length?todayEvs.map(e=>`<div class="ev-item"><div class="ev-time">${e.time||'全天'}</div><div class="ev-body"><div class="ev-title">${esc(e.title)}</div></div></div>`).join(''):'<div class="card"><div class="empty">今天没有日程安排</div></div>'}`;
+    ${todayEvs.length?todayEvs.map(e=>`<div class="ev-item"><div class="ev-time">${e.time||'全天'}</div><div class="ev-body"><div class="ev-title">${esc(e.title)}</div></div></div>`).join(''):`<div class="card">${emptyState('今天没有日程安排','sleep','日历上排好的事，会在这里提醒你')}</div>`}`;
   $('#quickToday').addEventListener('keydown',e=>{if(e.key==='Enter'){addTaskQuick(e.target.value);e.target.value='';}});
   updateHeroTimer();
 }
@@ -1899,7 +2103,7 @@ function renderStats(){
       </div>
       <div class="card">
         <div class="card-title">习惯完成率</div>
-        ${habs.length?habRows:'<div class="empty">还没有习惯，去打卡页建一个</div>'}
+        ${habs.length?habRows:emptyState('还没有习惯','happy','建一个习惯后，这里能看到完成率')}
       </div>
     </div>`;
 }
@@ -1956,6 +2160,66 @@ const SFX={
   visitor(){tone(587,0.12,'sine',0,0.08);tone(740,0.16,'sine',0.09,0.07);}
 };
 document.addEventListener('pointerdown',function once(){ensureAudio();},{once:true});
+/* ===== 专注白噪音（Web Audio 合成，无音频文件） ===== */
+let ambNode=null,ambGain=null,ambFilter=null,ambTimer=null,ambKind=null;
+function makeNoiseBuffer(){
+  const len=audioCtx.sampleRate*2;
+  const buf=audioCtx.createBuffer(1,len,audioCtx.sampleRate);
+  const d=buf.getChannelData(0);
+  for(let i=0;i<len;i++)d[i]=Math.random()*2-1;
+  return buf;
+}
+const AMBIENTS={rain:{label:'雨声',vol:.1},forest:{label:'森林',vol:.055},cafe:{label:'咖啡馆',vol:.075},wave:{label:'海浪',vol:.09}};
+function startAmbient(kind){
+  if(!kind){stopAmbient();return;}
+  ensureAudio();if(!audioCtx)return;
+  stopAmbient();
+  ambKind=kind;
+  const src=audioCtx.createBufferSource();src.buffer=makeNoiseBuffer();src.loop=true;
+  ambFilter=audioCtx.createBiquadFilter();
+  ambGain=audioCtx.createGain();
+  if(kind==='rain'){ambFilter.type='highpass';ambFilter.frequency.value=650;}
+  else if(kind==='forest'){ambFilter.type='lowpass';ambFilter.frequency.value=480;}
+  else if(kind==='cafe'){ambFilter.type='lowpass';ambFilter.frequency.value=420;}
+  else {ambFilter.type='lowpass';ambFilter.frequency.value=320;}
+  const target=AMBIENTS[kind]?AMBIENTS[kind].vol:.08;
+  src.connect(ambFilter);ambFilter.connect(ambGain);ambGain.connect(audioCtx.destination);
+  ambGain.gain.setValueAtTime(0.0001,audioCtx.currentTime);
+  ambGain.gain.linearRampToValueAtTime(target,audioCtx.currentTime+1.2);
+  src.start();ambNode=src;
+  clearInterval(ambTimer);
+  ambTimer=setInterval(()=>{
+    if(!audioCtx||!ambNode)return;
+    if(ambKind==='forest'&&Math.random()<.5)birdChirp();
+    else if(ambKind==='cafe'&&Math.random()<.3)cupClink();
+    else if(ambKind==='wave'&&Math.random()<.2)waveSwell();
+  },2200);
+}
+function birdChirp(){
+  if(!sfxEnabled())return;
+  const base=1700+Math.random()*1100,n=2+Math.floor(Math.random()*2);
+  for(let i=0;i<n;i++)tone(base+i*150,0.07,'sine',i*0.07,0.035);
+}
+function cupClink(){tone(2300+Math.random()*700,0.06,'triangle',0,0.025);}
+function waveSwell(){if(ambGain&&audioCtx){const t=audioCtx.currentTime;ambGain.gain.cancelScheduledValues(t);ambGain.gain.linearRampToValueAtTime(0.13,t+2.2);ambGain.gain.linearRampToValueAtTime(0.06,t+5);}}
+function stopAmbient(){
+  clearInterval(ambTimer);ambTimer=null;
+  if(ambGain&&audioCtx){
+    try{
+      const n=ambNode;
+      ambGain.gain.cancelScheduledValues(audioCtx.currentTime);
+      ambGain.gain.setValueAtTime(ambGain.gain.value,audioCtx.currentTime);
+      ambGain.gain.linearRampToValueAtTime(0.0001,audioCtx.currentTime+.4);
+      setTimeout(()=>{try{n.stop()}catch(e){}},480);
+    }catch(e){}
+  }
+  ambNode=null;ambGain=null;ambKind=null;
+}
+function toggleAmbient(kind){
+  if(ambKind===kind){stopAmbient();}
+  else{startAmbient(kind);}
+  if(location.hash==='#/timer'||document.querySelector('.timer-modal'))renderTimer();
+}
 function toggleSfx(){
   const ui=loadUi();const on=ui.sound!==false;
   localStorage.setItem(UI_KEY,JSON.stringify(Object.assign(ui,{sound:!on})));
@@ -2244,6 +2508,14 @@ function sheepSVG(pose,opts){
 }
 function ownedCos(){
   return {hat:(db.inventory['cos_hat']||0)>0,bow:(db.inventory['cos_bow']||0)>0};
+}
+/* 贴纸化空状态 */
+function emptyState(text,pose,sub){
+  return `<div class="empty-state">
+    <div class="empty-sticker">${sheepSVG(pose||'happy',{})}</div>
+    <div class="empty-text">${text}</div>
+    ${sub?`<div class="empty-sub">${sub}</div>`:''}
+  </div>`;
 }
 
 /* ---------- 访客（小动物朋友） ---------- */
