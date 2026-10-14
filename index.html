@@ -486,6 +486,27 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
 @keyframes burstFly{0%{opacity:1;transform:translate(-50%,0) rotate(0) scale(.4)}15%{opacity:1;transform:translate(calc(-50% + var(--dx)*.25),var(--dy)*.25) scale(1.2)}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),var(--dy)) rotate(var(--rot)) scale(.5)}}
 @media(prefers-reduced-motion:reduce){.burst-particle{display:none}.coin-fly{animation-duration:.5s}}
 
+/* ===== 草叶结算卡 ===== */
+.reward-pop{text-align:center;padding:4px 2px 2px}
+.reward-sheep{width:132px;height:118px;margin:0 auto 2px;cursor:pointer;position:relative;user-select:none;transition:transform .2s}
+.reward-sheep svg{width:100%;height:100%;display:block;filter:drop-shadow(0 8px 10px rgba(124,100,60,.16))}
+.reward-sheep:active{transform:scale(.94)}
+.reward-sheep.petted{animation:rewardBounce .65s cubic-bezier(.2,1.6,.4,1)}
+@keyframes rewardBounce{0%{transform:scale(1)}30%{transform:scale(1.14) rotate(-5deg)}55%{transform:scale(.95) rotate(4deg)}100%{transform:scale(1)}}
+.reward-sheep .reward-heart{position:absolute;top:6px;left:50%;font-size:22px;pointer-events:none;opacity:0}
+.reward-sheep .reward-heart.h-on{animation:rewardHeart .8s ease-out forwards}
+@keyframes rewardHeart{0%{opacity:0;transform:translateX(-50%) translateY(6px) scale(.5)}35%{opacity:1;transform:translateX(-50%) translateY(-6px) scale(1.2)}100%{opacity:0;transform:translateX(-50%) translateY(-22px) scale(.9)}}
+.reward-title{font-size:19px;font-weight:800;margin:2px 0 4px}
+.reward-sub{font-size:13.5px;color:var(--ink-2);margin:0 auto 12px;max-width:300px;line-height:1.55}
+.reward-coin{display:inline-flex;align-items:center;gap:8px;background:var(--green-soft);border:1.5px solid #BFD9B6;border-radius:999px;padding:9px 22px;font-size:21px;font-weight:800;color:var(--brand);margin:0 0 16px;box-shadow:var(--shadow-sm)}
+.reward-coin svg{width:24px;height:24px}
+.reward-coin.doubled{background:var(--amber-soft);border-color:#E6C98F;color:var(--amber)}
+.reward-actions{display:flex;gap:10px}
+.reward-actions .btn{flex:1;padding:11px 12px;font-size:15px}
+.btn-double{background:linear-gradient(135deg,#E8B85A,#D0922F);color:#fff;border:none;font-weight:700;box-shadow:0 6px 14px rgba(208,146,47,.32)}
+.btn-double:active{transform:scale(.97)}
+.btn-double:disabled{opacity:.55;cursor:default;box-shadow:none}
+
 /* ===== 小院子场景 ===== */
 .yard{position:relative;border-radius:20px;overflow:hidden;min-height:380px;
   background:linear-gradient(180deg,#BBDCE8 0%,#DCEDEB 48%,#CFE3C2 100%);border:1px solid #BFD8C0}
@@ -1423,7 +1444,9 @@ function stopEarly(){
 }
 function completeSession(){
   const dur=modeDur(timer.mode);
+  let wasFocus=false;
   if(timer.mode==='focus'){
+    wasFocus=true;
     db.pomodoros.push({id:uid(),task_id:timer.taskId,start_time:timer.startedAt?new Date(timer.startedAt).toISOString():new Date().toISOString(),
       end_time:new Date().toISOString(),planned:dur/60,actual:dur/60,mode:'focus',completed:1});
     if(timer.taskId){const t=db.tasks.find(x=>x.id===timer.taskId);if(t)t.actual=(t.actual||0)+1;}
@@ -1431,7 +1454,6 @@ function completeSession(){
     awardCoins('pomo');
     save();
     SFX.done();
-    coinFly(AWARD_RULE.pomo);
     gainExp(10);
     checkAchievements();
     notify('专注完成，休息一下吧');
@@ -1446,12 +1468,41 @@ function completeSession(){
   saveTimer();
   if(location.hash==='#/today'||!location.hash)renderToday();
   renderTimer();
+  if(wasFocus)showPomoReward(AWARD_RULE.pomo,modeDur('focus')/60);
 }
 function tick(){
   if(!timer.running)return;
   timer.remain=Math.max(0,Math.round((timer.endAt-Date.now())/1000));
   if(timer.remain<=0){completeSession();return;}
   if($('#timerOverlay').classList.contains('show'))updateRing();
+}
+function showPomoReward(amount,mins){
+  window.__pomoDoubled=false;
+  const leaf=COIN_ICON.replace(/width="17" height="17"/,'width="24" height="24"');
+  window.__pomoAccept=function(){closeModal();renderTimer();if(location.hash==='#/today'||!location.hash)renderToday();};
+  window.__pomoDouble=function(){
+    if(window.__pomoDoubled)return;
+    window.__pomoDoubled=true;
+    db.coins+=amount;save();
+    const sheep=$('#rewardSheep');
+    if(sheep){sheep.classList.add('petted');const h=sheep.querySelector('.reward-heart');if(h)h.classList.add('h-on');}
+    const coin=$('#rewardCoin');if(coin){coin.classList.add('doubled');coin.innerHTML=leaf+' +'+(amount*2)+' 草叶';}
+    const sub=$('#rewardSub');if(sub)sub.textContent='小羊开心极了，把自己攒的草叶也分你一半，双倍草叶已进账';
+    const btn=$('#doubleBtn');if(btn){btn.disabled=true;btn.textContent='已双倍';}
+    celebrateBurst(innerWidth/2,innerHeight/2);
+    setTimeout(function(){closeModal();renderTimer();if(location.hash==='#/today'||!location.hash)renderToday();},1150);
+  };
+  openModal(`<div class="reward-pop" id="rewardCard">
+    <div class="reward-sheep" id="rewardSheep" onclick="window.__pomoDouble()">${sheepSVG('happy')}<span class="reward-heart" style="color:#E88A9E">♥</span></div>
+    <div class="reward-title">专注完成</div>
+    <div class="reward-sub" id="rewardSub">你完成了一个 ${mins} 分钟番茄，小羊在院子里为你轻轻鼓掌，送你 ${amount} 草叶</div>
+    <div class="reward-coin" id="rewardCoin">${leaf} +${amount} 草叶</div>
+    <div class="reward-actions">
+      <button class="btn btn-ghost" onclick="window.__pomoAccept()">开心收下</button>
+      <button class="btn btn-double" id="doubleBtn" onclick="window.__pomoDouble()">摸摸小羊 · 双倍</button>
+    </div>
+  </div>`);
+  celebrateBurst(innerWidth/2,innerHeight/2);
 }
 setInterval(tick,500);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&timer.running)tick();});
@@ -2133,9 +2184,9 @@ function renderStats(){
       <div class="page-sub">${start.replace(/-/g,'/')} — ${end.replace(/-/g,'/')} · 共 ${days} 天</div></div>
     <div class="chips">${['week','month','days30'].map(r=>`<button class="chip ${statsRange===r?'active':''}" onclick="statsRange='${r}';renderStats()">${rangeNames[r]}</button>`).join('')}</div>
     <div class="stats">
-      <div class="stat"><div class="stat-num">${pomoDone}<small>个</small></div><div class="stat-label">完成番茄 · ${focusH} 小时</div></div>
-      <div class="stat"><div class="stat-num">${tasksDone}<small>项</small></div><div class="stat-label">完成任务 · 到期完成率 ${duePct}%</div></div>
-      <div class="stat"><div class="stat-num">${habPct}<small>%</small></div><div class="stat-label">习惯打卡 · ${habDone}/${habDays}</div></div>
+      <div class="stat stat-tomato"><div><div class="stat-num">${pomoDone}<small>个</small></div><div class="stat-label">完成番茄 · ${focusH} 小时</div></div><div class="stat-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="14" r="7.4" fill="#E0705A"/><path d="M12 6.8c-1.9.1-3.2-.6-3.8-1.9 1.7-.1 2.9.4 3.8 1.9Zm0 0c1.9.1 3.2-.6 3.8-1.9-1.7-.1-2.9.4-3.8 1.9Z" fill="#5C9468"/></svg></div></div>
+      <div class="stat stat-green"><div><div class="stat-num">${tasksDone}<small>项</small></div><div class="stat-label">完成任务 · 到期完成率 ${duePct}%</div></div><div class="stat-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#6FA878"/><path d="M8 12.3l2.6 2.6L16.2 9.3" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+      <div class="stat stat-amber"><div><div class="stat-num">${habPct}<small>%</small></div><div class="stat-label">习惯打卡 · ${habDone}/${habDays}</div></div><div class="stat-ic"><svg viewBox="0 0 24 24"><rect x="4" y="5.5" width="16" height="14.5" rx="3" fill="#D0922F"/><path d="M4 10h16" stroke="#fff" stroke-width="1.6"/><path d="M8 3.5v4M16 3.5v4" stroke="#B97A22" stroke-width="2" stroke-linecap="round"/><path d="M9 14h3" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg></div></div>
     </div>
     <div class="card" style="margin-top:14px">
       <div class="card-title">近 14 天专注趋势</div>
