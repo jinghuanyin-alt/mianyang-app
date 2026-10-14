@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>绵羊 · 效率三件套</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#234036">
+<meta name="theme-color" content="#5C9468">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -25,27 +25,29 @@
 </script>
 <style>
 :root{
-  --bg:#F4F5F2; --surface:#FFFFFF; --ink:#202925; --ink-2:#68706A; --ink-3:#9AA19B;
-  --line:#E2E4DD; --line-soft:#EDEEE8;
-  --brand:#234036; --brand-soft:#E7EEEA;
-  --tomato:#D14E3A; --tomato-ink:#A93827; --tomato-soft:#F8E8E4;
-  --green:#2E7D5B; --green-soft:#E5F0EA;
-  --amber:#BC8427; --amber-soft:#F6EEDD;
-  --blue:#3D6B8F; --blue-soft:#E7EEF3;
-  --radius:12px; --radius-sm:8px;
-  --shadow:0 1px 2px rgba(32,41,37,.05);
+  --bg:#FBF5EA; --surface:#FFFDF7; --ink:#3A332A; --ink-2:#7C7263; --ink-3:#AB9F8C;
+  --line:#EFE5D2; --line-soft:#F6EFE0;
+  --brand:#5C9468; --brand-soft:#E9F2E3;
+  --tomato:#E0705A; --tomato-ink:#C0513D; --tomato-soft:#FBE9E3;
+  --green:#6FA878; --green-soft:#EAF3E2;
+  --amber:#D0922F; --amber-soft:#F8EEDB;
+  --blue:#5E8BAE; --blue-soft:#E7F0F5;
+  --radius:18px; --radius-sm:13px;
+  --shadow:0 8px 22px rgba(124,100,60,.09);
+  --shadow-sm:0 3px 10px rgba(124,100,60,.07);
   --font:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Segoe UI",sans-serif;
   --mono:"SF Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
 }
 [data-theme="dark"]{
-  --bg:#141A17; --surface:#1E2622; --ink:#E3E8E3; --ink-2:#98A29A; --ink-3:#677169;
-  --line:#2C352F; --line-soft:#262E29;
-  --brand:#2E4A40; --brand-soft:#26392F;
-  --tomato:#D7604D; --tomato-ink:#E08372; --tomato-soft:#3A2520;
-  --green:#4E9C7D; --green-soft:#22332A;
-  --amber:#C99A4E; --amber-soft:#352E1E;
-  --blue:#6B95B5; --blue-soft:#21303C;
-  --shadow:0 1px 2px rgba(0,0,0,.35);
+  --bg:#1B1D18; --surface:#26291F; --ink:#ECE7D8; --ink-2:#A99F8A; --ink-3:#746B59;
+  --line:#33362B; --line-soft:#2D3026;
+  --brand:#6FA878; --brand-soft:#2C382B;
+  --tomato:#E0806C; --tomato-ink:#E89786; --tomato-soft:#3C2622;
+  --green:#7DB688; --green-soft:#29372B;
+  --amber:#D6A65B; --amber-soft:#38301F;
+  --blue:#7FA8C8; --blue-soft:#23323C;
+  --shadow:0 8px 22px rgba(0,0,0,.4);
+  --shadow-sm:0 3px 10px rgba(0,0,0,.3);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
@@ -147,15 +149,25 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ===== 今日页 ===== */
-.hero{background:var(--brand);color:#fff;border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}
+.hero{background:linear-gradient(135deg,#86C08F 0%,#6BA976 52%,#5C9468 100%);color:#fff;border-radius:22px;padding:26px;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px;box-shadow:0 12px 26px rgba(92,148,104,.32);position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-46px;top:-46px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.14);pointer-events:none}
+.hero>*{position:relative;z-index:1}
 .hero-date{font-size:13.5px;opacity:.82;letter-spacing:1px}
 .hero-greet{font-size:21px;font-weight:700;margin-top:2px}
 .hero-pet{font-size:13px;opacity:.92;margin-top:7px;display:inline-flex;align-items:center;gap:4px;
   background:rgba(255,255,255,.16);padding:4px 11px;border-radius:20px;cursor:pointer}
-.hero-start{background:var(--tomato);color:#fff;padding:13px 22px;border-radius:999px;font-weight:700;font-size:15px;white-space:nowrap;display:flex;align-items:center;gap:8px}
+.hero-start{background:var(--tomato);color:#fff;padding:13px 22px;border-radius:999px;font-weight:700;font-size:15px;white-space:nowrap;display:flex;align-items:center;gap:8px;box-shadow:0 6px 16px rgba(224,112,90,.4);transition:transform .15s,box-shadow .15s}
+.hero-start:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 9px 20px rgba(224,112,90,.48)}
 .hero-start svg{width:18px;height:18px;fill:#fff}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
-.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:15px 16px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:15px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;box-shadow:var(--shadow-sm)}
+.stat-ic{width:46px;height:46px;border-radius:15px;display:flex;align-items:center;justify-content:center;flex:none;transition:transform .2s}
+.stat:hover .stat-ic{transform:scale(1.08) rotate(-4deg)}
+.stat-ic svg{width:26px;height:26px}
+.stat-tomato .stat-ic{background:var(--tomato-soft)}
+.stat-green .stat-ic{background:var(--green-soft)}
+.stat-amber .stat-ic{background:var(--amber-soft)}
+.stat-blue .stat-ic{background:var(--blue-soft)}
 .stat-num{font-size:26px;font-weight:700;font-family:var(--mono);line-height:1.1}
 .stat-num small{font-size:13px;color:var(--ink-2);font-weight:500;margin-left:2px}
 .stat-label{font-size:12.5px;color:var(--ink-2);margin-top:3px}
@@ -338,8 +350,8 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
 .fab-menu.show{display:flex}
 
 /* ===== 勾选微交互 ===== */
-@keyframes checkPop{0%{transform:scale(1)}50%{transform:scale(1.3)}100%{transform:scale(1)}}
-.task.done .check{animation:checkPop .3s ease}
+@keyframes checkPop{0%{transform:scale(.6)}45%{transform:scale(1.4)}70%{transform:scale(.9)}100%{transform:scale(1)}}
+.task.done .check{animation:checkPop .42s cubic-bezier(.2,1.5,.4,1)}
 .habit-check.done{animation:checkPop .3s ease}
 
 /* ===== 番茄钟浮层 ===== */
@@ -442,6 +454,12 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
   .cal-item.task{border-left-width:2px}
   .ev-time{min-width:74px;font-size:12px}
   .fab{display:flex}
+  .stats{gap:8px}
+  .stat{position:relative;flex-direction:column;align-items:flex-start;gap:7px;padding:12px 10px 11px}
+  .stat-ic{position:absolute;top:9px;right:9px;width:34px;height:34px;border-radius:11px}
+  .stat-ic svg{width:20px;height:20px}
+  .stat-num{font-size:20px}
+  .stat-label{font-size:11px;white-space:nowrap;line-height:1.2}
   .stats-grid2{grid-template-columns:1fr}
   .chart-bars{gap:3px}
   .bar-lab{font-size:9px}
@@ -458,8 +476,15 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
 @keyframes zzzFloat{0%,100%{opacity:.35;transform:translateY(0)}50%{opacity:1;transform:translateY(-6px)}}
 .sheep-sm{max-width:120px}
 .sheep-xs{max-width:64px}
-.coin-fly{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);color:#5B9E5B;font-weight:800;font-size:22px;z-index:200;pointer-events:none;text-shadow:0 1px 0 #fff;animation:coinFlyUp 1.4s ease-out forwards}
-@keyframes coinFlyUp{0%{opacity:0;transform:translate(-50%,10px) scale(.8)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-60px) scale(1.1)}}
+.coin-fly{position:fixed;left:50%;bottom:140px;transform:translateX(-50%);z-index:200;pointer-events:none;display:inline-flex;align-items:center;gap:7px;background:#fff;color:#4F8A52;font-weight:800;font-size:20px;padding:10px 20px;border-radius:999px;box-shadow:0 12px 26px rgba(92,148,104,.38);border:2px solid #DCEFD8;animation:coinPop 1.4s cubic-bezier(.2,1.45,.4,1) forwards}
+.coin-fly .cf-leaf{width:21px;height:21px;flex:none}
+@keyframes coinPop{0%{opacity:0;transform:translate(-50%,18px) scale(.5)}16%{opacity:1;transform:translate(-50%,0) scale(1.18)}28%{transform:translate(-50%,-5px) scale(1)}70%{opacity:1;transform:translate(-50%,-30px) scale(1)}100%{opacity:0;transform:translate(-50%,-60px) scale(.94)}}
+.burst-particle{position:fixed;left:50%;bottom:146px;z-index:199;pointer-events:none;animation:burstFly .95s cubic-bezier(.15,.6,.3,1) forwards}
+.burst-particle.leaf{width:13px;height:13px;border-radius:80% 10% 80% 10%}
+.burst-particle.dot{width:10px;height:10px;border-radius:50%}
+.burst-particle.star{width:14px;height:14px;clip-path:polygon(50% 0,61% 36%,98% 35%,68% 57%,79% 94%,50% 71%,21% 94%,32% 57%,2% 35%,39% 36%)}
+@keyframes burstFly{0%{opacity:1;transform:translate(-50%,0) rotate(0) scale(.4)}15%{opacity:1;transform:translate(calc(-50% + var(--dx)*.25),var(--dy)*.25) scale(1.2)}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),var(--dy)) rotate(var(--rot)) scale(.5)}}
+@media(prefers-reduced-motion:reduce){.burst-particle{display:none}.coin-fly{animation-duration:.5s}}
 
 /* ===== 小院子场景 ===== */
 .yard{position:relative;border-radius:20px;overflow:hidden;min-height:380px;
@@ -1964,9 +1989,9 @@ function renderToday(){
       <button class="hero-start" id="heroStart" onclick="openTimer()">${ICONS.play}<span id="heroStartText">开始专注</span></button>
     </div>
     <div class="stats">
-      <div class="stat"><div class="stat-num">${pomos}<small>个</small></div><div class="stat-label">今日番茄</div></div>
-      <div class="stat"><div class="stat-num">${doneTasks}<small>项</small></div><div class="stat-label">完成任务</div></div>
-      <div class="stat"><div class="stat-num">${checkedN}/${habits.length}</div><div class="stat-label">习惯打卡</div></div>
+      <div class="stat stat-tomato"><div><div class="stat-num">${pomos}<small>个</small></div><div class="stat-label">今日番茄</div></div><div class="stat-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="14" r="7.4" fill="#E0705A"/><path d="M12 6.8c-1.9.1-3.2-.6-3.8-1.9 1.7-.1 2.9.4 3.8 1.9Zm0 0c1.9.1 3.2-.6 3.8-1.9-1.7-.1-2.9.4-3.8 1.9Z" fill="#5C9468"/></svg></div></div>
+      <div class="stat stat-green"><div><div class="stat-num">${doneTasks}<small>项</small></div><div class="stat-label">完成任务</div></div><div class="stat-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#6FA878"/><path d="M8 12.3l2.6 2.6L16.2 9.3" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+      <div class="stat stat-amber"><div><div class="stat-num">${checkedN}/${habits.length}</div><div class="stat-label">习惯打卡</div></div><div class="stat-ic"><svg viewBox="0 0 24 24"><rect x="4" y="5.5" width="16" height="14.5" rx="3" fill="#D0922F"/><path d="M4 10h16" stroke="#fff" stroke-width="1.6"/><path d="M8 3.5v4M16 3.5v4" stroke="#B97A22" stroke-width="2" stroke-linecap="round"/><path d="M9 14h3" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg></div></div>
     </div>
     ${frogCardHTML()}
     <div class="section-row"><h3>今日任务</h3><button class="link" onclick="location.hash='#/tasks'">全部任务</button></div>
@@ -2150,7 +2175,7 @@ function applyTheme(){
   if(dark)document.documentElement.setAttribute('data-theme','dark');
   else document.documentElement.removeAttribute('data-theme');
   const mc=document.querySelector('meta[name="theme-color"]');
-  if(mc)mc.setAttribute('content',dark?'#141A17':'#234036');
+  if(mc)mc.setAttribute('content',dark?'#1B1D18':'#5C9468');
 }
 function setTheme(mode){
   localStorage.setItem(UI_KEY,JSON.stringify(Object.assign(loadUi(),{theme:mode})));
@@ -2649,9 +2674,33 @@ function settleGrow(){
 function coinFly(n){
   const el=document.createElement('div');
   el.className='coin-fly';
-  el.textContent='+'+n;
+  el.innerHTML='<svg class="cf-leaf" viewBox="0 0 24 24"><path d="M12 2 C18 5 20 11 18 17 C13 18 7 16 5 10 C7 5 9 3 12 2 Z" fill="#7CB979"/><path d="M12 3 C12 8 12 13 13 17" stroke="#4F8A52" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg><span>+'+n+'</span>';
   document.body.appendChild(el);
+  celebrateBurst();
   setTimeout(()=>el.remove(),1400);
+}
+function celebrateBurst(originX,originY){
+  const colors=['#7CB979','#9CCB7A','#E8B85A','#F0C888','#E08A7A','#F2B9C2'];
+  const types=['leaf','dot','star'];
+  const N=16;
+  for(let i=0;i<N;i++){
+    const p=document.createElement('div');
+    const type=types[i%3];
+    p.className='burst-particle '+type;
+    p.style.background=colors[i%colors.length];
+    const ang=(Math.PI*2*i)/N+(Math.random()*.4-.2);
+    const dist=70+Math.random()*70;
+    const dx=Math.cos(ang)*dist;
+    const dy=Math.sin(ang)*dist - 40;
+    const rot=(Math.random()*260-130);
+    p.style.setProperty('--dx',dx.toFixed(0)+'px');
+    p.style.setProperty('--dy',dy.toFixed(0)+'px');
+    p.style.setProperty('--rot',rot.toFixed(0)+'deg');
+    if(originX){p.style.left=originX+'px';p.style.bottom='auto';p.style.top=originY+'px';}
+    p.style.animationDelay=(Math.random()*.06)+'s';
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(),1100);
+  }
 }
 
 /* ---------- 物品图标 ---------- */
