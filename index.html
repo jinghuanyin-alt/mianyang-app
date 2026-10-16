@@ -146,6 +146,8 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
 .empty-sub{font-size:12.5px;color:var(--ink-3);margin-top:6px;line-height:1.7}
 .empty svg{width:38px;height:38px;margin-bottom:8px;stroke:var(--ink-3)}
 .toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%) translateY(20px);background:var(--brand);color:#fff;padding:10px 20px;border-radius:999px;font-size:14px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:200;max-width:88vw;text-align:center}
+.modal-mask.show ~ #toast{bottom:auto;top:56px;z-index:210}
+.modal-mask.show ~ #toast.show{transform:translateX(-50%) translateY(0)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ===== 今日页 ===== */
@@ -421,7 +423,7 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{background:var(--su
   .side-sec{margin-top:14px}
   .nav-item{flex-direction:row;gap:11px;width:100%;font-size:14px;padding:10px 12px;justify-content:flex-start}
   .nav-item svg{width:19px;height:19px}
-  .main{margin-left:0;padding:60px 16px 96px}
+  .main{margin-left:0;padding:60px 16px 150px}
   /* 汉堡 */
   .menu-btn{display:flex;position:fixed;top:12px;left:12px;z-index:45;
     width:42px;height:42px;border-radius:12px;background:var(--surface);
@@ -1477,6 +1479,7 @@ function tick(){
   if($('#timerOverlay').classList.contains('show'))updateRing();
 }
 function showPomoReward(amount,mins){
+  const ov=$('#timerOverlay');if(ov)ov.classList.remove('show');
   window.__pomoDoubled=false;
   const leaf=COIN_ICON.replace(/width="17" height="17"/,'width="24" height="24"');
   window.__pomoAccept=function(){closeModal();renderTimer();if(location.hash==='#/today'||!location.hash)renderToday();};
@@ -1613,7 +1616,13 @@ function deleteTask(id){
 }
 function rrLabel(r){
   if(!r)return '';
-  const map={daily:'每天',weekdays:'工作日',interval:'每'+(r.interval||2)+'天',weekly:'每周',monthly_date:'每月'+(r.monthDate||1)+'号',monthly_dow:'每月'+(r.pos===-1?'最后':['','一','二','三','四'][r.pos])+['','一','二','三','四','五','六','日'][r.weekday]};
+  if(r.type==='monthly_dow'){
+    const dow=['日','一','二','三','四','五','六'][r.weekday]||'一';
+    if(r.pos===-1)return '每月最后一个周'+dow;
+    const ord=['','第一','第二','第三','第四'][r.pos]||('第'+r.pos);
+    return '每月'+ord+'个周'+dow;
+  }
+  const map={daily:'每天',weekdays:'工作日',interval:'每'+(r.interval||2)+'天',weekly:'每周',monthly_date:'每月'+(r.monthDate||1)+'号'};
   return map[r.type]||'重复';
 }
 function taskModal(id){
@@ -2723,6 +2732,8 @@ function settleGrow(){
   return gain;
 }
 function coinFly(n){
+  // 弹窗（如番茄结算卡）已承载奖励反馈时，不再叠加飞徽章，避免视觉重叠；草叶照常入账、提示走 toast
+  if($('#modalMask').classList.contains('show'))return;
   const el=document.createElement('div');
   el.className='coin-fly';
   el.innerHTML='<svg class="cf-leaf" viewBox="0 0 24 24"><path d="M12 2 C18 5 20 11 18 17 C13 18 7 16 5 10 C7 5 9 3 12 2 Z" fill="#7CB979"/><path d="M12 3 C12 8 12 13 13 17" stroke="#4F8A52" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg><span>+'+n+'</span>';
@@ -3260,6 +3271,7 @@ function gardenHTML(){
    小院子主页
    ============================================================ */
 const COIN_ICON='<svg viewBox="0 0 24 24" width="17" height="17" style="vertical-align:-3px"><path d="M12 21 v-10 M12 11 C12 6 8 4 4 5 c0 5 3 8 8 6z M12 8 c0 -4 4 -6 8 -5 0 5 -3 7 -8 6z" fill="#5B9E5B"/></svg>';
+const COIN_ICON_W=COIN_ICON.replace('#5B9E5B','#ffffff');
 const HOME_SVG='<svg viewBox="0 0 80 62"><rect x="14" y="28" width="52" height="34" fill="#F0E4D2"/><path d="M8 30 L40 6 L72 30 Z" fill="#D18E5A"/><rect x="34" y="42" width="14" height="20" fill="#B5835A"/><rect x="20" y="36" width="10" height="10" fill="#BBD8E4"/></svg>';
 const FENCE_SVG='<svg viewBox="0 0 90 34" preserveAspectRatio="none"><path d="M6 6 v26 M24 6 v26 M42 6 v26 M60 6 v26 M78 6 v26 M4 14 h82 M4 26 h82" stroke="#A9784E" stroke-width="4" stroke-linecap="round"/></svg>';
 const TREE_SVG='<svg viewBox="0 0 120 140"><rect x="50" y="82" width="20" height="54" rx="6" fill="#9C6B44"/><circle cx="84" cy="70" r="27" fill="#76B468"/><circle cx="38" cy="72" r="25" fill="#8AC87C"/><circle cx="60" cy="52" r="41" fill="#7FBF72"/><circle cx="60" cy="38" r="3.5" fill="#B0DEA0"/><circle cx="44" cy="58" r="3" fill="#B0DEA0"/><circle cx="78" cy="54" r="3.4" fill="#B0DEA0"/></svg>';
@@ -3724,7 +3736,7 @@ function renderShop(){
         <div class="desc">${esc(tip)}</div>
         <button class="btn ${afford?'btn-primary':'btn-ghost'} btn-block" onclick="buyItem('${it.id}')"
           style="font-size:13px;padding:7px">
-          <span class="cost" style="color:${afford?'#fff':'#4E8A4E'}">${COIN_ICON}${it.cost}</span>
+          <span class="cost" style="color:${afford?'#fff':'#4E8A4E'}">${afford?COIN_ICON_W:COIN_ICON}${it.cost}</span>
         </button>
       </div>`;
     }).join('')}</div>
@@ -4010,6 +4022,7 @@ function render(){
   const map={today:renderToday,calendar:renderCalendar,tasks:renderTasks,habits:renderHabits,stats:renderStats,settings:renderSettings,
     yard:renderYard,shop:renderShop,bag:renderBag,album:renderAlbum,book:renderBook,diary:renderDiary,room:renderRoom,ach:renderAchievements};
   (map[view]||renderToday)();
+  renderNav();
   window.scrollTo(0,0);
   const fab=$('#fab');
   if(fab)fab.style.display=['today','calendar','tasks','habits'].includes(view)?'':'none';
